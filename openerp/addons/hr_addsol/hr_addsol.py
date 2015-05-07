@@ -107,6 +107,12 @@ class addsol_hr_employee(osv.osv):
             pass
         return True
 
+class resource_calendar(osv.osv):
+    _inherit = 'resource.calendar'
+    _columns = {
+        'late_days': fields.integer('Days', help="Number of days an employee comes late."),
+        'late_time': fields.float('Time (In Minutes)', help="Minutes allowed for late coming.")
+    }
 
 class addsol_hr_holidays_status(osv.osv):
     _inherit = "hr.holidays.status"
@@ -117,7 +123,8 @@ class addsol_hr_holidays_status(osv.osv):
                                   ('sl','Sick Leaves'),
                                   ('cl','Casual Leaves'),
                                   ('comp','Compensatory Leaves'),
-                                  ('request','Request Leaves')], 'Basic Types', required=True),
+                                  ('request','Request Leaves'),
+                                  ('half','Half Day Leave')], 'Basic Types', required=True),
     }
     
 class addsol_hr_holidays(osv.osv):
@@ -125,9 +132,35 @@ class addsol_hr_holidays(osv.osv):
     
     _columns = {
         'no_of_days': fields.related('holiday_status_id', 'no_of_days', type='integer', string='No of Allowed Days'),
-        'certificate': fields.binary('Attach Certificate'),
+        'certificate': fields.binary('Attach Document'),
     }
     
+    def onchange_date_from(self, cr, uid, ids, holiday_status_id, date_to, date_from):
+        result = super(addsol_hr_holidays, self).onchange_date_from(cr, uid, ids, date_to, date_from)
+        leave_type_obj = self.pool.get('hr.holidays.status')
+        days = result['value']['number_of_days_temp']
+        status = leave_type_obj.browse(cr, uid, holiday_status_id)
+        if status.type == 'half' and days > 1:
+            result['value'].update({'number_of_days_temp': days/2})
+        return result
+     
+    def onchange_date_to(self, cr, uid, ids, holiday_status_id, date_to, date_from):
+        result = super(addsol_hr_holidays, self).onchange_date_from(cr, uid, ids, date_to, date_from)
+        leave_type_obj = self.pool.get('hr.holidays.status')
+        days = result['value']['number_of_days_temp']
+        status = leave_type_obj.browse(cr, uid, holiday_status_id)
+        if status.type == 'half' and days > 1:
+            result['value'].update({'number_of_days_temp': days/2})
+        return result
+    
+    def onchange_leave_type(self, cr, uid, ids, holiday_status_id, context=None):
+        leave_type_obj = self.pool.get('hr.holidays.status')
+        res = {'value': {}}
+        status = leave_type_obj.browse(cr, uid, holiday_status_id, context=context)
+        if status.type == 'half':
+            res['value'].update({'number_of_days_temp': 0.50})
+        return res
+
     def _check_sick_leaves_date(self, cr, uid, ids, context=None):
         """ Checks whether the sick leave is for past dates.
         """

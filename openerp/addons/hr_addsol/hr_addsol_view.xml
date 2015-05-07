@@ -2,8 +2,8 @@
 <openerp>
     <data>
 
-        <record id="view_employee_form" model="ir.ui.view">
-            <field name="name">hr.employee.form</field>
+        <record id="addsol_view_employee_form" model="ir.ui.view">
+            <field name="name">addsol.hr.employee.form</field>
             <field name="model">hr.employee</field>
             <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
@@ -68,6 +68,20 @@
             </field>
         </record>
 
+        <record id="addsol_resource_calendar_form" model="ir.ui.view">
+            <field name="name">addsol.resource.calendar.form</field>
+            <field name="model">resource.calendar</field>
+            <field name="inherit_id" ref="resource.resource_calendar_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/group" position="after">
+                    <group string="Late Coming">
+                        <field name="late_days"/>
+                        <field name="late_time" widget="float_time"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    
         <!-- hr.job
         <record id="addsol_view_hr_job_form" model="ir.ui.view">
             <field name="name">addsol.hr.job.form</field>
@@ -116,9 +130,20 @@
                 <xpath expr="//form/header/button[@name='validate']" position="replace">
                     <button string="Approve" name="validate" states="confirm,cancel" type="workflow" groups="base.group_hr_user" class="oe_highlight"/>
                 </xpath>
-                <xpath expr="//field[@name='department_id']" position="after">
-                    <field name="certificate" attrs="{'invisible': [('type','=','add')]}"/>
+                <xpath expr="//field[@name='notes']" position="before">
+                    <group colspan="4">
+                        <field name="certificate" attrs="{'invisible': [('type','=','add')]}"/>
+                    </group>
                 </xpath>
+                <field name="holiday_status_id" position="replace">
+                    <field name="holiday_status_id" on_change="onchange_leave_type(holiday_status_id)" context="{'employee_id':employee_id}"/>
+                </field>
+                <field name="date_from" position="replace">
+                    <field name="date_from" nolabel="1" on_change="onchange_date_from(holiday_status_id, date_to, date_from)" attrs="{'required':[('type', '=', 'remove')]}" class="oe_inline"/>
+                </field>
+                <field name="date_to" position="replace">
+                    <field name="date_to" nolabel="1" on_change="onchange_date_to(holiday_status_id, date_to, date_from)"  attrs="{'required':[('type', '=', 'remove')]}" class="oe_inline"/>
+                </field>
             </field>
         </record>
 

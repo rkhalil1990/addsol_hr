@@ -54,15 +54,15 @@
            <field name="args" eval="'()'"/>
         </record>
 
-        <!--record model="ir.cron" id="allocate_leaves_on_month_end">
-           <field name="name">Carry forward paid leaves on month end</field>
+        <record model="ir.cron" id="create_leaves_on_month_end">
+           <field name="name">Create half day leave for late coming employees</field>
            <field name="interval_number">1</field>
-           <field name="interval_type">years</field>
+           <field name="interval_type">months</field>
            <field name="numbercall">-1</field>
            <field name="model" eval="'hr.holidays'"/>
-           <field name="function" eval="'run_yearly_scheduler'"/>
+           <field name="function" eval="'check_late_coming_employees'"/>
            <field name="args" eval="'()'"/>
-        </record-->
+        </record>
 
     </data>
 </openerp>

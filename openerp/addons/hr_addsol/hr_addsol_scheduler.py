@@ -21,11 +21,23 @@
 ##############################################################################
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from pytz import timezone
+import pytz
+
 from openerp.osv import osv
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
+
+def _get_timezone_employee(self, employee, date):
+    tz = employee.user_id.partner_id.tz
+    att_tz = timezone(tz or 'utc')
+    attendance_dt = datetime.strptime(date, DEFAULT_SERVER_DATETIME_FORMAT)
+    att_tz_dt = pytz.utc.localize(attendance_dt)
+    att_tz_dt = att_tz_dt.astimezone(att_tz)
+    return att_tz_dt
 
 class addsol_hr_attendance(osv.osv):
     _inherit = 'hr.attendance'
@@ -106,6 +118,42 @@ class addsol_hr_attendance(osv.osv):
 
 class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
+    
+    def check_late_coming_employees(self, cr, uid, context=None):
+        leave_obj = self.pool.get('hr.holidays')
+        leave_status_obj = self.pool.get('hr.holidays.status')
+        attendance_obj = self.pool.get('hr.attendance')
+        resource_pool = self.pool.get('resource.resource')
+        date_from  = datetime.strftime((datetime.now() + relativedelta(day=1)),'%Y-%m-%d %H:%M:%S')
+        date_to  = datetime.strftime((datetime.now() + relativedelta(day=31)),'%Y-%m-%d %H:%M:%S')
+        attendance_ids = attendance_obj.search(cr, uid, [('name','>=',date_from),('name','<=',date_to),('action','=','sign_in')], context=context)
+        holiday_status_id = leave_status_obj.search(cr, uid, [('type','=','half')], context=context)
+        current_date = time.strftime('%Y-%m-%d')
+        res = {}
+        for attendance in attendance_obj.browse(cr, uid, attendance_ids, context=context):
+            attendance_dt = _get_timezone_employee(attendance.employee_id, attendance.name)
+            calendar_id = attendance.employee_id.calendar_id or False
+            if not res.has_key(attendance.employee_id.id):
+                res[attendance.employee_id.id] = 0
+            if calendar_id:
+                sign_in_day = attendance_dt.strftime("%a")
+                sign_in_time = attendance_dt.strftime("%H.%M")
+                for working_cal in resource_pool.compute_working_calendar(cr, uid, calendar_id.id, context):
+                    index = working_cal[1].find('-')
+                    late_time = float((working_cal[1][:index]).replace(':','.')) + (calendar_id.late_time*0.01)
+                    if sign_in_day.lower() == working_cal[0] and float(sign_in_time) > late_time:
+                        res[attendance.employee_id.id] += 1
+            if res[attendance.employee_id.id] > calendar_id.late_days:
+                leave_obj.create(cr, uid, {
+                                'name': 'Half day - For late coming',
+                                'date_from': current_date,
+                                'date_to': current_date,
+                                'number_of_days_temp': 0.5,
+                                'holiday_status_id': holiday_status_id and holiday_status_id[0],
+                                'employee_id': attendance.employee_id.id,
+                                'type': 'remove',
+                            })
+        return True
 
     def run_monthly_scheduler(self, cr, uid, context=None):
         """ Runs at the end of every month to allocate PL, CL & SL to all 
