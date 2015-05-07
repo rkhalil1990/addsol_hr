@@ -31,7 +31,7 @@ from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
 
-def _get_timezone_employee(self, employee, date):
+def _get_timezone_employee(employee, date):
     tz = employee.user_id.partner_id.tz
     att_tz = timezone(tz or 'utc')
     attendance_dt = datetime.strptime(date, DEFAULT_SERVER_DATETIME_FORMAT)
