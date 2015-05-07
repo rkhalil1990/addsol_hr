@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_employee_form" model="ir.ui.view">
+            <field name="name">hr.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page[@string='Personal Information']" position="replace">
+                    <page string="Personal Information" groups="base.group_user">
+                        <group>
+                            <group string="Citizenship &amp; Other Info">
+                                <field name="country_id" options='{"no_open": True}'/>
+                                <field name="identification_id" groups="base.group_hr_user"/>
+                                <field name="passport_id" groups="base.group_hr_user"/>
+                                <field name="bank_account_id"/>
+                                <field name="otherid" groups="base.group_hr_user"/>
+                            </group>
+                            <group string="Contact Information">
+                                <field name="address_home_id"
+                                    context="{'show_address': 1, 'default_customer': False}"
+                                    options='{"always_reload": True, "highlight_first_line": True}'/>
+                            </group>
+                            <group string="Status">
+                                <field name="gender"/>
+                                <field name="marital"/>
+                            </group>
+                            <group string="Birth">
+                                <field name="birthday"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//notebook/page[@string='HR Settings']" position="replace">
+                    <page string="HR Settings" groups="base.group_user">
+                        <group>
+                            <group string="Active" name="active_group">
+                                <field name="active"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="addsol_hr_employee_view_form" model="ir.ui.view">
+            <field name="name">addsol.hr.employee.view.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@string='Contract']/field[@name='vehicle_distance']" position="after">
+                    <field name="no_of_years"/> years
+                    <field name="total_days"/>
+                    <field name="eligible"/>
+                </xpath>
+                <xpath expr="//field[@name='user_id']" position="replace">
+                    <label for="user_id"/>
+                    <div>
+                        <field name="user_id" class="oe_inline"/>
+                        <button string="(Create User)" 
+                                name="create_user_for_employee" type="object"
+                                class="oe_link oe_inline oe_edit_only" 
+                                attrs="{'invisible': [('user_id', '!=', False)]}"
+                                groups="base.group_hr_manager"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- hr.job
+        <record id="addsol_view_hr_job_form" model="ir.ui.view">
+            <field name="name">addsol.hr.job.form</field>
+            <field name="model">hr.job</field>
+            <field name="inherit_id" ref="hr.view_hr_job_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='requirements']" position="after">
+                    <field name="product_ids" colspan="4"/>
+                </xpath>
+            </field>
+        </record>  -->
+
+        <record id="addsol_hr_holidays_status_form" model="ir.ui.view">
+            <field name="name">hr.holidays.status.addsol</field>
+            <field name="model">hr.holidays.status</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='categ_id']" position="before">
+                    <field name="type"/>
+                    <field name="no_of_days" attrs="{'invisible': [('type','!=','sl')], 'required': [('type','=','sl')]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="addsol_hr_timesheet_sheet_form" model="ir.ui.view">
+            <field name="name">addsol.hr.timesheet.sheet.form</field>
+            <field name="model">hr_timesheet_sheet.sheet</field>
+            <field name="priority">12</field>
+            <field name="inherit_id" ref="hr_timesheet_sheet.hr_timesheet_sheet_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page/group/field/tree[@string='Attendances']" position="attributes">
+                    <attribute name="create">false</attribute>
+                    <attribute name="edit">false</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="addsol_edit_holiday_new">
+            <field name="name">Addsol Leave Request</field>
+            <field name="model">hr.holidays</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_new"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/header/button[@name='refuse']" position="after">
+                    <button string="Cancel" name="cancel" states="validate" type="workflow" groups="base.group_user"/>
+                </xpath>
+                <xpath expr="//form/header/button[@name='validate']" position="replace">
+                    <button string="Approve" name="validate" states="confirm,cancel" type="workflow" groups="base.group_hr_user" class="oe_highlight"/>
+                </xpath>
+                <xpath expr="//field[@name='department_id']" position="after">
+                    <field name="certificate" attrs="{'invisible': [('type','=','add')]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Doesn't work: To make few fields readonly on Employee form only for Employee user -->
+        <!--record id="addsol_view_employee_form" model="ir.ui.view">
+            <field name="name">addsol.hr.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@string='Position']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('user_id.groups_id','in',['base.group_user'])]}</attribute>
+                </xpath>
+            </field>
+        </record-->
+
+        <record model="ir.ui.view" id="addsol_hr_calendar_tree">
+            <field name="name">addsol.hr.calendar.tree</field>
+            <field name="model">addsol.hr.calendar</field>
+            <field name="arch" type="xml">
+                <tree string="Public Holidays Calendar" editable="bottom">
+                    <field name="name"/>
+                    <field name="date_from"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="addsol_hr_calendar_form">
+            <field name="name">addsol.hr.calendar.form</field>
+            <field name="model">addsol.hr.calendar</field>
+            <field name="arch" type="xml">
+                <form string="Public Holidays Calendar">
+                    <sheet>
+                        <div>
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                            <label for="company_id" class="oe_edit_only" groups="base.group_multi_company"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </div>
+                        <group cols="2" colspan="2">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="addsol_hr_calendar_calendar">
+            <field name="name">addsol.hr.calendar.calendar</field>
+            <field name="model">addsol.hr.calendar</field>
+            <field name="arch" type="xml">
+                <calendar color="company_id" date_start="date_from" date_stop="date_to" string="Holidays">
+                    <field name="name"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="open_addsol_hr_calendar" model="ir.actions.act_window">
+            <field name="name">Public Holidays Calendar</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">addsol.hr.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar,tree,form</field>
+            <field name="view_id" eval="addsol_hr_calendar_tree"/>
+        </record>
+
+
+        <!-- Menus -->
+
+        <menuitem action="open_addsol_hr_calendar" id="menu_addsol_hr_calendar" parent="hr_holidays.menu_open_ask_holidays" sequence="45"/>
+
+        <menuitem id="hr_attendance.menu_hr_attendance" name="Attendances" parent="hr.menu_hr_root" sequence="10" groups="base.group_hr_manager"/>
+        <menuitem action="hr_attendance.open_view_attendance" id="hr_attendance.menu_open_view_attendance" parent="hr_attendance.menu_hr_attendance" sequence="20" groups="base.group_hr_manager"/>
+
+        <menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_open_allocation_holidays" action="hr_holidays.open_allocation_holidays" groups="base.group_hr_manager"/>
+
+        <menuitem action="hr_contract.action_hr_contract" id="hr_contract.hr_menu_contract" parent="hr.menu_hr_main" name="Contracts" sequence="4" groups="base.group_user"/>
+
+    </data>
+</openerp>

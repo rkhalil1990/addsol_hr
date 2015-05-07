@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+
+        <!-- Leave Types -->
+        <record model="hr.holidays.status" id="hr_holidays.holiday_status_cl">
+            <field name="type">paid</field>
+        </record>
+
+        <record model="hr.holidays.status" id="hr_holidays.holiday_status_sl">
+            <field name="type">sl</field>
+            <field name="no_of_days">2</field>
+        </record>
+
+        <record model="hr.holidays.status" id="hr_holidays.holiday_status_comp">
+            <field name="type">comp</field>
+        </record>
+
+        <record model="hr.holidays.status" id="hr_holidays.holiday_status_unpaid">
+            <field name="type">unpaid</field>
+        </record>
+
+        <record model="hr.holidays.status" id="holiday_status_attendance">
+            <field name="name">Attendance Request</field>
+            <field name="type">request</field>
+            <field name="color_name">violet</field>
+            <field name="limit">True</field>
+        </record>
+
+        <record model="hr.holidays.status" id="holiday_status_casual">
+            <field name="name">Casual Leave</field>
+            <field name="type">cl</field>
+            <field name="color_name">lightgreen</field>
+        </record>
+
+        <!-- Schedulers -->
+        <record model="ir.cron" id="generate_leaves_on_daily_attendance">
+           <field name="name">Generate leaves based on daily attendance</field>
+           <field name="interval_number">1</field>
+           <field name="interval_type">days</field>
+           <field name="numbercall">-1</field>
+           <field name="model" eval="'hr.attendance'"/>
+           <field name="function" eval="'run_daily_scheduler'"/>
+           <field name="args" eval="'()'"/>
+        </record>
+
+        <record model="ir.cron" id="allocate_leaves_on_month_end">
+           <field name="name">Allocate leaves on month end</field>
+           <field name="interval_number">1</field>
+           <field name="interval_type">months</field>
+           <field name="numbercall">-1</field>
+           <field name="model" eval="'hr.holidays'"/>
+           <field name="function" eval="'run_monthly_scheduler'"/>
+           <field name="args" eval="'()'"/>
+        </record>
+
+        <!--record model="ir.cron" id="allocate_leaves_on_month_end">
+           <field name="name">Carry forward paid leaves on month end</field>
+           <field name="interval_number">1</field>
+           <field name="interval_type">years</field>
+           <field name="numbercall">-1</field>
+           <field name="model" eval="'hr.holidays'"/>
+           <field name="function" eval="'run_yearly_scheduler'"/>
+           <field name="args" eval="'()'"/>
+        </record-->
+
+    </data>
+</openerp>

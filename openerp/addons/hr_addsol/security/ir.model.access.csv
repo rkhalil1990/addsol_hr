@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_payslip_user,hr.payslip emp,hr_payroll.model_hr_payslip,base.group_user,1,0,0,0
+access_hr_contract_user,hr.contract emp,hr_contract.model_hr_contract,base.group_user,1,0,0,0
+access_hr_attendance_emp,hr.attendance.emp,hr_attendance.model_hr_attendance,base.group_user,1,0,0,0
+access_resource_calendar_attendance_officer,resource.calendar.attendance.officer,resource.model_resource_calendar_attendance,base.group_hr_user,1,0,0,0
+access_hr_addsol_calendar,hr.addsol.calendar officer,model_addsol_hr_calendar,base.group_hr_user,1,1,1,1
+access_hr_addsol_calendar_emp,hr.addsol.calendar employee,model_addsol_hr_calendar,base.group_user,1,0,0,0
+hr_holidays.access_hr_holydays_status_employee,hr.holidays.status employee,hr_holidays.model_hr_holidays_status,base.group_user,1,1,0,0
