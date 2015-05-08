@@ -3,7 +3,6 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2015-2016 Addition IT Solutions Pvt. Ltd. (<http://www.aitspl.com>).
-#    @author: Ujjvala Gonsalves
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -120,7 +119,6 @@ class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
     
     def check_late_coming_employees(self, cr, uid, context=None):
-        leave_obj = self.pool.get('hr.holidays')
         leave_status_obj = self.pool.get('hr.holidays.status')
         attendance_obj = self.pool.get('hr.attendance')
         resource_pool = self.pool.get('resource.resource')
@@ -140,19 +138,19 @@ class addsol_hr_holidays(osv.osv):
                 sign_in_time = attendance_dt.strftime("%H.%M")
                 for working_cal in resource_pool.compute_working_calendar(cr, uid, calendar_id.id, context):
                     index = working_cal[1].find('-')
-                    late_time = float((working_cal[1][:index]).replace(':','.')) + (calendar_id.late_time*0.01)
+                    late_time = float((working_cal[1][:index]).replace(':','.')) + (calendar_id.late_time * 0.01)
                     if sign_in_day.lower() == working_cal[0] and float(sign_in_time) > late_time:
                         res[attendance.employee_id.id] += 1
-            if res[attendance.employee_id.id] > calendar_id.late_days:
-                leave_obj.create(cr, uid, {
-                                'name': 'Half day - For late coming',
-                                'date_from': current_date,
-                                'date_to': current_date,
-                                'number_of_days_temp': 0.5,
-                                'holiday_status_id': holiday_status_id and holiday_status_id[0],
-                                'employee_id': attendance.employee_id.id,
-                                'type': 'remove',
-                            })
+                if res[attendance.employee_id.id] > calendar_id.late_days:
+                    self.create(cr, uid, {
+                                    'name': 'Half day - For late coming',
+                                    'date_from': current_date,
+                                    'date_to': current_date,
+                                    'number_of_days_temp': 0.5,
+                                    'holiday_status_id': holiday_status_id and holiday_status_id[0],
+                                    'employee_id': attendance.employee_id.id,
+                                    'type': 'remove',
+                                })
         return True
 
     def run_monthly_scheduler(self, cr, uid, context=None):
@@ -160,7 +158,6 @@ class addsol_hr_holidays(osv.osv):
         eligible employees.
         """
         employee_obj = self.pool.get('hr.employee')
-        leave_obj = self.pool.get('hr.holidays')
         leave_status_obj = self.pool.get('hr.holidays.status')
         date_from  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=1)),'%Y-%m-%d %H:%M:%S')
         date_to  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=31)),'%Y-%m-%d %H:%M:%S')
@@ -169,7 +166,7 @@ class addsol_hr_holidays(osv.osv):
         holiday_status_ids = leave_status_obj.search(cr, uid, [('type','in',('paid','sl','cl'))], context=context)
         for holiday_status in leave_status_obj.browse(cr, uid, holiday_status_ids, context=context):
             for emp in employee_obj.browse(cr, uid, employee_ids, context=context):
-                allocate_ids = leave_obj.search(cr, uid, [('date_from','=',date_from), 
+                allocate_ids = self.search(cr, uid, [('date_from','=',date_from), 
                                                           ('date_to','=',date_to), 
                                                           ('type','=','add'), 
                                                           ('employee_id','=',emp.id),
@@ -193,7 +190,7 @@ class addsol_hr_holidays(osv.osv):
                 }
                 if holiday_status.type in ('cl','sl'):
                     vals.update({'number_of_days_temp': 0.5})
-                leave_id = leave_obj.create(cr, uid, vals, context=context)
-                leave_obj.holidays_validate(cr, uid, [leave_id], context=context)
+                leave_id = self.create(cr, uid, vals, context=context)
+                self.holidays_validate(cr, uid, [leave_id], context=context)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

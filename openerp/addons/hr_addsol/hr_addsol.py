@@ -3,7 +3,6 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2015-2016 Addition IT Solutions Pvt. Ltd. (<http://www.aitspl.com>).
-#    @author: Ujjvala Gonsalves
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -58,12 +57,18 @@ class addsol_hr_employee(osv.osv):
         hours are more than 8 hours/day then 1 day is added.
         """
         obj_attendance = self.pool.get('hr.attendance')
+        resource_pool = self.pool.get('resource.calendar')
         res = {}
         for emp in self.browse(cr, uid, ids, context=context):
             attendance_ids = obj_attendance.search(cr, uid, [('employee_id','=',emp.id),], order='name', context=context)
             res[emp.id] = 0
+            working_hours = 8
             for att in obj_attendance.browse(cr, uid, attendance_ids, context=context):
-                if att.worked_hours >= 8:
+                if emp.calendar_id and att.action == 'sign_in':
+                    start_dt = datetime.strptime(att.name, '%Y-%m-%d %H:%M:%S')
+                    working_hours = resource_pool.get_working_hours_of_date(cr, uid, emp.calendar_id.id, start_dt, None,
+                                  None, False, emp.id, None, context)
+                if att.action == 'sign_out' and att.worked_hours >= working_hours:
                     res[emp.id] += 1
         return res
 
@@ -72,19 +77,38 @@ class addsol_hr_employee(osv.osv):
         then this flag is marked True. And employee can start availing the
         paid leaves.
         """
+        obj_contract = self.pool.get('hr.contract')
         res = {}
         for emp in self.browse(cr, uid, ids, context=context):
+            contract_ids = obj_contract.search(cr, uid, [('employee_id','=',emp.id),], order='date_start', context=context)
             res[emp.id] = False
-            if emp.total_days >= 240:
-                res[emp.id] = True
+            for contract in obj_contract.browse(cr, uid, contract_ids, context=context):
+                if contract.trial_date_start and contract.trial_date_end:
+                    if contract.date_start <= time.strftime('%Y-%m-%d'):
+                        res[emp.id] = True
         return res
 
     _columns = {
         'no_of_years': fields.function(_calc_no_of_years, type='float', digits=(16,2), string='Years of Service'),
-        'total_days': fields.function(_count_total_days, type='integer', string="Total Present Days", store=True),
-        'eligible': fields.function(_eligible_for_pl, type='boolean', string='Eligible for PL?', store=True),
+        'total_days': fields.function(_count_total_days, type='integer', string="Total Present Days"),
+        'eligible': fields.function(_eligible_for_pl, type='boolean', string='Eligible for PL?'),
     }
+
+    def create(self, cr, uid, vals, context=None):
+        emp_id = super(addsol_hr_employee, self).create(cr, uid, vals, context)
+        if vals.get('parent_id'):
+            for record in self.browse(cr, uid, [vals.get('parent_id')], context=context):
+                if record.user_id:
+                    self.message_subscribe_users(cr, uid, [emp_id], user_ids=[record.user_id.id], context=context)
+        return emp_id
     
+    def write(self, cr, uid, ids, vals, context=None):
+        if vals.get('parent_id'):
+            for record in self.browse(cr, uid, [vals.get('parent_id')], context=context):
+                if record.parent_id.user_id:
+                    self.message_subscribe_users(cr, uid, ids, user_ids=[record.user_id.id], context=context)
+        return super(addsol_hr_employee, self).write(cr, uid, ids, vals, context)
+
     def create_user_for_employee(self, cr, uid, ids, context=None):
         """ Allows to create a user for the employee from employee form.
         """
@@ -112,6 +136,11 @@ class resource_calendar(osv.osv):
     _columns = {
         'late_days': fields.integer('Days', help="Number of days an employee comes late."),
         'late_time': fields.float('Time (In Minutes)', help="Minutes allowed for late coming.")
+    }
+    
+    _defaults = {
+        'late_days': 3,
+        'late_time': 15.0,
     }
 
 class addsol_hr_holidays_status(osv.osv):
@@ -254,6 +283,7 @@ class addsol_hr_holidays(osv.osv):
 class addsol_hr_calendar(osv.osv):
     _name = 'addsol.hr.calendar'
     _description = "Calendar for Public Holidays"
+    _order = 'date_from'
 
     _columns = {
         'name': fields.char('Holiday Name', required=True, size=64),
