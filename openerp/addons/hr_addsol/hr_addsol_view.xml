@@ -74,11 +74,14 @@
             <field name="inherit_id" ref="resource.resource_calendar_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//form/sheet/group" position="after">
-                    <group string="Late Coming">
+                    <group string="Late Coming" groups="base.group_hr_user">
                         <field name="late_days"/>
                         <field name="late_time" widget="float_time"/>
                     </group>
                 </xpath>
+                <field name="leave_ids" position="replace">
+                    <field name="leave_ids" groups="base.group_hr_user"/>
+                </field>
             </field>
         </record>
     
@@ -93,6 +96,20 @@
                 </xpath>
             </field>
         </record>  -->
+
+        <record id="view_employee_form_leave_inherit_addsol" model="ir.ui.view">
+            <field name="name">addsol.hr.employee.leave.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr_holidays.view_employee_form_leave_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@string='Leaves']" position="inside">
+                    <label for="calendar_id"/>
+                    <div>
+                        <field name="calendar_id" class="oe_inline"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
 
         <record id="addsol_hr_holidays_status_form" model="ir.ui.view">
             <field name="name">hr.holidays.status.addsol</field>

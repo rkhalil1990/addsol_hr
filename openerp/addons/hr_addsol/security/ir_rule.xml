@@ -16,13 +16,12 @@
             <field name="groups" eval="[(4, ref('base.group_hr_user'))]"/>
         </record>
 
-        <!--
+        <!-- Employee Records -->
         <record model="ir.rule" id="ir_rule_employee_employee">
             <field name="name">Employee list</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
-            <field name="domain_force">[('user_id','=',user.id)]</field>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-        </record> -->
+            <field name="domain_force">[('message_follower_ids', 'in', [user.partner_id.id])]</field>
+        </record> 
 
     </data>
 </openerp>
