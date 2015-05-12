@@ -137,7 +137,7 @@ class addsol_hr_employee(osv.osv):
                 if record.user_id:
                     self.message_subscribe_users(cr, uid, [emp_id], user_ids=[record.user_id.id], context=context)
         return emp_id
-    
+
     def write(self, cr, uid, ids, vals, context=None):
         if vals.get('parent_id'):
             for record in self.browse(cr, uid, [vals.get('parent_id')], context=context):
