@@ -25,7 +25,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import timezone
 import pytz
 
-from openerp.osv import osv
+from openerp.osv import osv, fields
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
@@ -40,6 +40,40 @@ def _get_timezone_employee(employee, date):
 
 class addsol_hr_attendance(osv.osv):
     _inherit = 'hr.attendance'
+    
+    def _total_worked_hours(self, cr, uid, ids, fieldnames, args, context=None):
+        total_worked_hours = 0.0
+        res = {}
+        for obj in self.browse(cr, uid, ids, context=context):
+            res[obj.id] = 0.0
+            if obj.action == 'sign_in':
+                res[obj.id] = 0.0
+            if obj.action == 'sign_out':
+                name = (datetime.strptime(obj.name, '%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%d')
+                total_ids = self.search(cr, uid, [
+                            ('name','>=',name+' 00:00:00'),
+                            ('name','<=',name+' 23:59:59'),
+                            ('employee_id', '=', obj.employee_id.id),
+                            ('action','=','sign_out')
+                        ], order='name DESC')
+                total_worked_hours = 0.0
+                if total_ids:
+                    for rec in self.browse(cr, uid, total_ids, context=context):
+                        total_worked_hours += rec.worked_hours
+                    res[total_ids[0]] = total_worked_hours
+        return res
+    
+    def _worked_hours_compute(self, cr, uid, ids, fieldnames, args, context=None):
+        """For each hr.attendance record of action sign-in: assign 0.
+        For each hr.attendance record of action sign-out: assign number of hours since last sign-in.
+        """
+        res = super(addsol_hr_attendance, self)._worked_hours_compute(cr, uid, ids, fieldnames, args, context)
+        return res
+    
+    _columns = {
+        'worked_hours': fields.function(_worked_hours_compute, type='float', string='Worked Hours'),
+        'total_worked_hours': fields.function(_total_worked_hours, type='float', string='Total Worked Hours'),
+    }
     
     def run_daily_scheduler(self, cr, uid, context=None):
         """ Runs at the end of the day to check attendances of employees.
@@ -82,7 +116,7 @@ class addsol_hr_attendance(osv.osv):
                             'employee_id': attendance.employee_id.id,
                             'type': 'remove',
                     }
-                elif hours_count >= 5 and hours_count <= 7.45: # Currently fixed value, can be changed according to company calendar
+                elif hours_count >= 5 and hours_count <= 7.45: # Currently fixed value, has to be changed according to company calendar
                     values = {
                             'name': 'Half Day - Late Coming',
                             'date_from': attendance.name,
@@ -119,9 +153,9 @@ class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
     
     def check_late_coming_employees(self, cr, uid, context=None):
+        employee_obj = self.pool.get('hr.employee')
         leave_status_obj = self.pool.get('hr.holidays.status')
         attendance_obj = self.pool.get('hr.attendance')
-        resource_pool = self.pool.get('resource.resource')
         date_from  = datetime.strftime((datetime.now() + relativedelta(day=1)),'%Y-%m-%d %H:%M:%S')
         date_to  = datetime.strftime((datetime.now() + relativedelta(day=31)),'%Y-%m-%d %H:%M:%S')
         attendance_ids = attendance_obj.search(cr, uid, [('name','>=',date_from),('name','<=',date_to),('action','=','sign_in')], context=context)
@@ -129,19 +163,28 @@ class addsol_hr_holidays(osv.osv):
         current_date = time.strftime('%Y-%m-%d')
         res = {}
         for attendance in attendance_obj.browse(cr, uid, attendance_ids, context=context):
+            half_leave_ids = self.search(cr, uid, [('date_from','=',current_date),
+                                                       ('employee_id','=',attendance.employee_id.id),
+                                                       ('type','=','remove'),
+                                                       ('holiday_status_id','=', holiday_status_id and holiday_status_id[0])])
+            if half_leave_ids:
+                continue
             attendance_dt = _get_timezone_employee(attendance.employee_id, attendance.name)
-            calendar_id = attendance.employee_id.calendar_id or False
+            calendar_id = attendance.employee_id.contract_id.working_hours or False
             if not res.has_key(attendance.employee_id.id):
-                res[attendance.employee_id.id] = 0
+                res[attendance.employee_id.id] = {attendance_dt.strftime('%Y-%m-%d'): 0}
+            if attendance_dt.strftime('%Y-%m-%d') in res[attendance.employee_id.id].keys():
+                continue
             if calendar_id:
-                sign_in_day = attendance_dt.strftime("%a")
                 sign_in_time = attendance_dt.strftime("%H.%M")
-                for working_cal in resource_pool.compute_working_calendar(cr, uid, calendar_id.id, context):
-                    index = working_cal[1].find('-')
-                    late_time = float((working_cal[1][:index]).replace(':','.')) + (calendar_id.late_time * 0.01)
-                    if sign_in_day.lower() == working_cal[0] and float(sign_in_time) > late_time:
-                        res[attendance.employee_id.id] += 1
-                if res[attendance.employee_id.id] > calendar_id.late_days:
+                calendar_val = employee_obj._get_daily_attendance(cr, uid, attendance)
+                late_time = calendar_val.get('entry_time') + (calendar_id.late_time * 0.01)
+#                 print "calendar_val:::::::::::::::::::::::::::",calendar_val
+                days = res[attendance.employee_id.id].get(attendance_dt.strftime('%Y-%m-%d'),False)
+                if days and float(sign_in_time) > late_time or \
+                    calendar_val.get('worked_hours') < calendar_val.get('working_hours'):
+                    days += 1
+                if res[attendance.employee_id.id].get(attendance_dt.strftime('%Y-%m-%d')) >= calendar_id.late_days:
                     self.create(cr, uid, {
                                     'name': 'Half day - For late coming',
                                     'date_from': current_date,

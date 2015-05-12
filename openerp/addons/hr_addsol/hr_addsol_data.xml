@@ -27,6 +27,13 @@
             <field name="limit">True</field>
         </record>
 
+        <record model="hr.holidays.status" id="holiday_status_half_day">
+            <field name="name">Half Day Leave</field>
+            <field name="type">half</field>
+            <field name="color_name">lightyellow</field>
+            <field name="limit">True</field>
+        </record>
+
         <record model="hr.holidays.status" id="holiday_status_casual">
             <field name="name">Casual Leave</field>
             <field name="type">cl</field>

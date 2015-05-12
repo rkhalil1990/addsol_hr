@@ -29,6 +29,45 @@ from openerp import SUPERUSER_ID
 class addsol_hr_employee(osv.osv):
     _inherit = "hr.employee"
     
+    def _get_daily_attendance(self, cr, uid, attendance):
+        resource_calendar_pool = self.pool.get('resource.calendar')
+        resource_pool = self.pool.get('resource.resource')
+        obj_attendance = self.pool.get('hr.attendance')
+        employee = attendance.employee_id
+        att_dt = datetime.strptime(attendance.name, '%Y-%m-%d %H:%M:%S')
+        # Defaults
+        working_hours = 8.0
+        entry_time = '10:00'
+        exit_time = '19:00'
+        worked_hours = 0.0
+
+        att_ids = obj_attendance.search(cr, uid, [('name','>',attendance.name),
+                                                  ('employee_id','=',employee.id),
+                                                  ('action','=','sign_out')])
+        for att in obj_attendance.browse(cr, uid, att_ids):
+            sign_out_date = (datetime.strptime(att.name, '%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%d')
+            if  sign_out_date == att_dt.strftime('%Y-%m-%d'):
+                worked_hours = att.total_worked_hours
+
+        if employee.contract_id and employee.contract_id.working_hours:
+            calendar_id = employee.contract_id.working_hours.id
+            working_hours = resource_calendar_pool.get_working_hours_of_date(cr, uid, calendar_id, att_dt, None,
+                          None, False, employee.id, None, None)
+            for working_cal in resource_pool.compute_working_calendar(cr, uid, calendar_id):
+                if att_dt.strftime("%a").lower() == working_cal[0]:
+                    index = working_cal[1].find('-')
+                    entry_time = float((working_cal[1][:index]).replace(':','.'))
+                    exit_time = float((working_cal[2][index:]).replace(':','.'))
+        result = {
+            'working_day': att_dt.strftime("%Y-%m-%d"),
+            'employee_id': employee.id,
+            'working_hours': working_hours,
+            'worked_hours': worked_hours,
+            'entry_time': entry_time,
+            'exit_time': exit_time,
+        }
+        return result
+    
     def _calc_no_of_years(self, cr, uid, ids, field_name, arg, context=None):
         """ Count total number of years employee has worked in the company
         based on the contracts.
@@ -57,7 +96,6 @@ class addsol_hr_employee(osv.osv):
         hours are more than 8 hours/day then 1 day is added.
         """
         obj_attendance = self.pool.get('hr.attendance')
-        resource_pool = self.pool.get('resource.calendar')
         res = {}
         for emp in self.browse(cr, uid, ids, context=context):
             attendance_ids = obj_attendance.search(cr, uid, [('employee_id','=',emp.id),], order='name', context=context)
@@ -65,9 +103,7 @@ class addsol_hr_employee(osv.osv):
             working_hours = 8
             for att in obj_attendance.browse(cr, uid, attendance_ids, context=context):
                 if emp.calendar_id and att.action == 'sign_in':
-                    start_dt = datetime.strptime(att.name, '%Y-%m-%d %H:%M:%S')
-                    working_hours = resource_pool.get_working_hours_of_date(cr, uid, emp.calendar_id.id, start_dt, None,
-                                  None, False, emp.id, None, context)
+                    working_hours = self._get_daily_attendance(cr, uid, att)['working_hours']
                 if att.action == 'sign_out' and att.worked_hours >= working_hours:
                     res[emp.id] += 1
         return res
