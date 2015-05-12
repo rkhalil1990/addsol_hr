@@ -1,5 +1,8 @@
 HR Services by Addition IT Solutions
 ====================================
+Contact:
+    * website: www.aitspl.com
+    * email: info@aitspl.com
 
 Manage different requests:
 ---------------------------
@@ -14,8 +17,8 @@ Other Features:
     * Checks employee's late comings of whole month at the end of every month.
     * Leave Type: (Half Day): counts number of days 0.5 in case half day leave type is selected
 
-Few security rules for an employee like:
-------------------------------------------------
+Few security rules for an employee:
+-----------------------------------
     * Not allowed to modify his attendances
     * Can't create allocation request for himself
     * Can see his payslip, salary structure and working schedule
