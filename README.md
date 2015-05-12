@@ -1,7 +1,8 @@
-HR Services by Addsol
----------------------
+HR Services by Addition IT Solutions
+====================================
+
 Manage different requests
-=========================
+-------------------------
 
 This application allows you to create different requests like:
     * Attendance Requests: generates attendances for employees for e.g. employee forgets to fill his/her attendance or is on official tour
