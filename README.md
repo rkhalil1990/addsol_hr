@@ -1,10 +1,8 @@
 HR Services by Addition IT Solutions
 ====================================
 
-Manage different requests
--------------------------
-
-This application allows you to create different requests like:
+Manage different requests:
+---------------------------
     * Attendance Requests: generates attendances for employees for e.g. employee forgets to fill his/her attendance or is on official tour
     * Allocation Requests: automated process to generate allocation requests after certain period
 
@@ -18,8 +16,8 @@ Other Features:
 
 Few security rules for an employee like:
 ------------------------------------------------
-    * Should not be able to modify his attendances
-    * Should not create allocation request for 
+    * Not allowed to modify his attendances
+    * Can't create allocation request for himself
     * Can see his payslip, salary structure and working schedule
 
 
