@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<openerp>
+    <data noupdate="1">
+
+        <!-- Scheduler -->
+        <record model="ir.cron" id="generate_leaves_on_daily_attendance">
+           <field name="name">Generate leaves based on daily attendance</field>
+           <field name="interval_number">1</field>
+           <field name="interval_type">days</field>
+           <field name="numbercall">-1</field>
+           <field name="model" eval="'hr.attendance'"/>
+           <field name="function" eval="'run_daily_scheduler'"/>
+           <field name="args" eval="'()'"/>
+        </record>
+
+        <record id="hr_payslip_line_unpaid_leaves" model="hr.salary.rule">
+            <field name="code">Unpaid</field>
+            <field name="name">Unpaid Leaves</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">unpaid_days = worked_days.Unpaid and worked_days.Unpaid.number_of_days
+daily_wage = contract.wage / (worked_days.WORK100.number_of_days + unpaid_days)
+result =  daily_wage * -unpaid_days</field>
+            <field eval="145" name="sequence"/>
+        </record>
+
+    </data>
+</openerp>
