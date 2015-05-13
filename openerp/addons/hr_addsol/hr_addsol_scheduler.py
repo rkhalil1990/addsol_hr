@@ -74,80 +74,6 @@ class addsol_hr_attendance(osv.osv):
         'worked_hours': fields.function(_worked_hours_compute, type='float', string='Worked Hours'),
         'total_worked_hours': fields.function(_total_worked_hours, type='float', string='Total Worked Hours'),
     }
-    
-    def run_daily_scheduler(self, cr, uid, context=None):
-        """ Runs at the end of the day to check attendances of employees.
-        And creates leaves if attendance criteria is not satisfied.
-        """
-        
-        _logger.info("Running daily attendance scheduler...")
-        employee_obj = self.pool.get('hr.employee')
-        leave_obj = self.pool.get('hr.holidays')
-        leave_status_obj = self.pool.get('hr.holidays.status')
-        user_obj = self.pool.get('res.users')
-        calendar_obj = self.pool.get('addsol.hr.calendar')
-        users = user_obj.search(cr, uid, [], context=context)
-        employees = employee_obj.search(cr, uid, [('user_id','in', users)], context=context)
-        current_date = time.strftime('%Y-%m-%d')
-        
-        # Returns if the current day is a public holiday
-        public_holiday = calendar_obj.search(cr, uid, [('date_from','=',current_date)], context=context) and True or False
-        if public_holiday:
-            return
-        
-        attendance_ids = self.search(cr, uid, [('name','>=',current_date+' 00:00:00'),('name','<=',current_date+' 23:59:59'),('employee_id','in',employees)], context=context)
-        holiday_status_id = leave_status_obj.search(cr, uid, [('type','=','unpaid')], context=context)
-        employees_present = []
-        domain = [('type','=','remove'),('date_from','>=',current_date+' 00:00:00'),('date_from','<=',current_date+' 23:59:59')]
-        for attendance in self.browse(cr, uid, attendance_ids, context=context):
-            if attendance.employee_id.id not in employees_present:
-                employees_present.append(attendance.employee_id.id)
-            values = {}
-            leave_ids = leave_obj.search(cr, uid, domain + [('employee_id','=',attendance.employee_id.id)], context=context)
-            hours_count = attendance.worked_hours
-            if not leave_ids:
-                if hours_count < 5 and attendance.action != 'sign_in':
-                    values = {
-                            'name': 'Full Day - Late Coming',
-                            'date_from': current_date,
-                            'date_to': current_date,
-                            'number_of_days_temp': 1.0,
-                            'holiday_status_id': holiday_status_id and holiday_status_id[0] or 1,
-                            'employee_id': attendance.employee_id.id,
-                            'type': 'remove',
-                    }
-                elif hours_count >= 5 and hours_count <= 7.45: # Currently fixed value, has to be changed according to company calendar
-                    values = {
-                            'name': 'Half Day - Late Coming',
-                            'date_from': attendance.name,
-                            'date_to': attendance.name,
-                            'number_of_days_temp': 0.5,
-                            'holiday_status_id': holiday_status_id and holiday_status_id[0] or 1,
-                            'employee_id': attendance.employee_id.id,
-                            'type': 'remove',
-                    }
-                if values:
-                    leave_id = leave_obj.create(cr, uid, values, context=context)
-#                     leave_obj.holidays_validate(cr, uid, [leave_id], context=context)
-
-        # For employees who have not marked their attendance
-        if len(employees_present) != len(employees):
-            absent_employees = [emp for emp in employees if emp not in employees_present]
-            for absent_employee in absent_employees:
-                emp = employee_obj.browse(cr, uid, absent_employee, context=context)
-                leave_ids = leave_obj.search(cr, uid, domain + [('employee_id','=',emp.id)], context=context)
-                if not leave_ids:
-                    values = {
-                            'name': 'No Attendance Marked',
-                            'date_from': current_date,
-                            'date_to': current_date,
-                            'number_of_days_temp': 1.0,
-                            'holiday_status_id': holiday_status_id and holiday_status_id[0] or 1,
-                            'employee_id': emp.id,
-                            'type': 'remove',
-                    }
-                    leave_id = leave_obj.create(cr, uid, values, context=context)
-#                     leave_obj.holidays_validate(cr, uid, [leave_id], context=context)
 
 class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
@@ -179,7 +105,6 @@ class addsol_hr_holidays(osv.osv):
                 sign_in_time = attendance_dt.strftime("%H.%M")
                 calendar_val = employee_obj._get_daily_attendance(cr, uid, attendance)
                 late_time = calendar_val.get('entry_time') + (calendar_id.late_time * 0.01)
-#                 print "calendar_val:::::::::::::::::::::::::::",calendar_val
                 days = res[attendance.employee_id.id].get(attendance_dt.strftime('%Y-%m-%d'),False)
                 if days and float(sign_in_time) > late_time or \
                     calendar_val.get('worked_hours') < calendar_val.get('working_hours'):
