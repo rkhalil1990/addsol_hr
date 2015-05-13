@@ -2,26 +2,11 @@
 <openerp>
     <data noupdate="1">
 
-        <record model="ir.rule" id="ir_rule_employee_contract">
-            <field name="name">Contract for Employee</field>
-            <field name="model_id" ref="hr_contract.model_hr_contract"/>
-            <field name="domain_force">[('employee_id.user_id','=',user.id)]</field>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <record model="ir.rule" id="ir_rule_public_holiday_calendar">
+            <field name="name">Public Holiday Calendar Rule</field>
+            <field name="model_id" ref="model_addsol_hr_calendar"/>
+            <field name="domain_force">['|',('company_id','=',user.company_id.id),('company_id','=',False)]</field>
         </record>
-
-        <record model="ir.rule" id="ir_rule_officer_contract">
-            <field name="name">Contract rules for Officer</field>
-            <field name="model_id" ref="hr_contract.model_hr_contract"/>
-            <field name="domain_force">[(1,'=',1)]</field>
-            <field name="groups" eval="[(4, ref('base.group_hr_user'))]"/>
-        </record>
-
-        <!-- Employee Records -->
-        <record model="ir.rule" id="ir_rule_employee_employee">
-            <field name="name">Employee list</field>
-            <field name="model_id" ref="hr.model_hr_employee"/>
-            <field name="domain_force">[('message_follower_ids', 'in', [user.partner_id.id])]</field>
-        </record> 
 
     </data>
 </openerp>

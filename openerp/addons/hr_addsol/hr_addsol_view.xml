@@ -2,48 +2,6 @@
 <openerp>
     <data>
 
-        <record id="addsol_view_employee_form" model="ir.ui.view">
-            <field name="name">addsol.hr.employee.form</field>
-            <field name="model">hr.employee</field>
-            <field name="inherit_id" ref="hr.view_employee_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook/page[@string='Personal Information']" position="replace">
-                    <page string="Personal Information" groups="base.group_user">
-                        <group>
-                            <group string="Citizenship &amp; Other Info">
-                                <field name="country_id" options='{"no_open": True}'/>
-                                <field name="identification_id" groups="base.group_hr_user"/>
-                                <field name="passport_id" groups="base.group_hr_user"/>
-                                <field name="bank_account_id"/>
-                                <field name="otherid" groups="base.group_hr_user"/>
-                            </group>
-                            <group string="Contact Information">
-                                <field name="address_home_id"
-                                    context="{'show_address': 1, 'default_customer': False}"
-                                    options='{"always_reload": True, "highlight_first_line": True}'/>
-                            </group>
-                            <group string="Status">
-                                <field name="gender"/>
-                                <field name="marital"/>
-                            </group>
-                            <group string="Birth">
-                                <field name="birthday"/>
-                            </group>
-                        </group>
-                    </page>
-                </xpath>
-                <xpath expr="//notebook/page[@string='HR Settings']" position="replace">
-                    <page string="HR Settings" groups="base.group_user">
-                        <group>
-                            <group string="Active" name="active_group">
-                                <field name="active"/>
-                            </group>
-                        </group>
-                    </page>
-                </xpath>
-            </field>
-        </record>
-
         <record id="addsol_hr_employee_view_form" model="ir.ui.view">
             <field name="name">addsol.hr.employee.view.form</field>
             <field name="model">hr.employee</field>
@@ -55,9 +13,9 @@
                     <field name="eligible"/>
                 </xpath>
                 <xpath expr="//field[@name='user_id']" position="replace">
-                    <label for="user_id"/>
+                    <label for="user_id" groups="base.group_hr_manager"/>
                     <div>
-                        <field name="user_id" class="oe_inline"/>
+                        <field name="user_id" class="oe_inline" groups="base.group_hr_manager"/>
                         <button string="(Create User)" 
                                 name="create_user_for_employee" type="object"
                                 class="oe_link oe_inline oe_edit_only" 
@@ -65,6 +23,60 @@
                                 groups="base.group_hr_manager"/>
                     </div>
                 </xpath>
+            </field>
+        </record>
+
+        <record id="addsol_hr_timesheet_line_tree" model="ir.ui.view">
+            <field name="name">addsol.hr.analytic.timesheet.tree</field>
+            <field name="model">hr.analytic.timesheet</field>
+            <field name="inherit_id" ref="hr_timesheet_invoice.hr_timesheet_line_tree"/>
+            <field name="arch" type="xml">
+                <field name="to_invoice" position="replace">
+                    <field name="to_invoice" groups="base.group_hr_manager"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="addsol_view_attendance_tree" model="ir.ui.view">
+            <field name="name">addsol.hr.attendance.tree</field>
+            <field name="model">hr.attendance</field>
+            <field name="arch" type="xml">
+                <tree string="Employee attendances" edit="false" create="false">
+                    <field name="name"/>
+                    <field name="action"/>
+                    <field name="action_desc"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_attendance.open_view_attendance" model="ir.actions.act_window">
+            <field name="name">Attendances</field>
+            <field name="res_model">hr.attendance</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="context">{"search_default_today":1}</field>
+            <field name="view_id" ref="addsol_view_attendance_tree"/>
+            <field name="search_view_id" ref="hr_attendance.view_hr_attendance_filter" />
+            <field name="help">The Time Tracking functionality aims to manage employee attendances from Sign in/Sign out actions. You can also link this feature to an attendance device using Odoo's web service features.</field>
+        </record>
+
+        <record id="hr_timesheet.act_hr_timesheet_line_evry1_all_form" model="ir.actions.act_window">
+            <field name="name">Timesheet Activities</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.analytic.timesheet</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="context">{"search_default_today":1}</field>
+            <field name="search_view_id" ref="hr_timesheet.hr_timesheet_line_search"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record activities.
+              </p><p>
+                You can register and track your workings hours by project every
+                day. Every time spent on a project will become a cost in the
+                analytic accounting/contract and can be re-invoiced to
+                customers if required.
+              </p>
             </field>
         </record>
 
@@ -84,18 +96,6 @@
                 </field>
             </field>
         </record>
-    
-        <!-- hr.job
-        <record id="addsol_view_hr_job_form" model="ir.ui.view">
-            <field name="name">addsol.hr.job.form</field>
-            <field name="model">hr.job</field>
-            <field name="inherit_id" ref="hr.view_hr_job_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='requirements']" position="after">
-                    <field name="product_ids" colspan="4"/>
-                </xpath>
-            </field>
-        </record>  -->
 
         <record id="addsol_hr_holidays_status_form" model="ir.ui.view">
             <field name="name">hr.holidays.status.addsol</field>
@@ -162,6 +162,7 @@
             </field>
         </record-->
 
+        <!-- Public Holiday Calendar -->
         <record model="ir.ui.view" id="addsol_hr_calendar_tree">
             <field name="name">addsol.hr.calendar.tree</field>
             <field name="model">addsol.hr.calendar</field>
@@ -221,12 +222,7 @@
 
         <menuitem action="open_addsol_hr_calendar" id="menu_addsol_hr_calendar" parent="hr_holidays.menu_open_ask_holidays" sequence="45"/>
 
-        <menuitem id="hr_attendance.menu_hr_attendance" name="Attendances" parent="hr.menu_hr_root" sequence="10" groups="base.group_hr_manager"/>
-        <menuitem action="hr_attendance.open_view_attendance" id="hr_attendance.menu_open_view_attendance" parent="hr_attendance.menu_hr_attendance" sequence="20" groups="base.group_hr_manager"/>
-
         <menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_open_allocation_holidays" action="hr_holidays.open_allocation_holidays" groups="base.group_hr_manager"/>
-
-        <menuitem action="hr_contract.action_hr_contract" id="hr_contract.hr_menu_contract" parent="hr.menu_hr_main" name="Contracts" sequence="4" groups="base.group_user"/>
 
     </data>
 </openerp>
