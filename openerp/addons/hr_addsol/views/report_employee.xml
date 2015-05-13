@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+    <template id="report_employee_document">
+        <t t-call="report.html_container">
+            <t t-call="report.external_layout">
+                <div class="page">
+                    <h2>Employee: <span t-field="o.name"/></h2>
+                
+                    <h3>Public Info</h3>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Designation</th>
+                                <th>Manager</th>
+                                <th>Work Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span t-field="o.department_id.name"/></td>
+                                <td><span t-field="o.job_id.name"/></td>
+                                <td><span t-field="o.parent_id.name"/></td>
+                                <td><span t-field="o.work_location"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p></p>
+                    <p></p>
+                    <div class="row" t-if="o.user_id.id == uid">
+                        <h3>Personal Info</h3>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Home Address</th>
+                                    <th>Birth Date</th>
+                                    <th>Place of Birth</th>
+                                    <th>Marital Status</th>
+                                    <th># of Children</th>
+                                    <th>Bank Account Number</th>
+                                    <th>Passport</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><br t-field="o.address_home_id.street"/>
+                                        <br t-field="o.address_home_id.street2"/>
+                                        <br t-field="o.address_home_id.city"/> <span t-field="o.address_home_id.zip"/>
+                                        <br t-field="o.address_home_id.state_id.name"/>
+                                        <br t-field="o.address_home_id.country_id.name"/></td>
+                                    <td><span t-field="o.birthday"/></td>
+                                    <td><span t-field="o.place_of_birth"/></td>
+                                    <td><span t-field="o.marital"/></td>
+                                    <td><span t-field="o.children"/></td>
+                                    <td><span t-field="o.bank_account_id.bank_name"/>: <span t-field="o.bank_account_id.acc_number"/></td>
+                                    <td><span t-field="o.passport_id"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p></p>
+                        <p></p>
+                        <h3>HR Settings</h3>
+                        <table class="table table-condensed">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Remaining Leaves: </strong> <span t-field="o.remaining_leaves"/></td>
+                                </tr>
+                            </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Company Vehicle: </strong> <span t-field="o.vehicle"/></td>
+                                </tr>
+                            </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Work-Home Distance: </strong> <span t-field="o.vehicle_distance"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Contract Info</h3>
+                        <div class="row mt32 mb32">
+                            <div class="col-xs-2" t-if="o.contract_id.trial_date_start">
+                                <strong>Probation Start:</strong>
+                                <p t-field="o.contract_id.trial_date_start"/>
+                            </div>
+                            <div class="col-xs-2" t-if="o.contract_id.trial_date_end">
+                                <strong>Probation End:</strong>
+                                <p t-field="o.contract_id.trial_date_end"/>
+                            </div>
+                            <div class="col-xs-2" t-if="o.contract_id.date_start">
+                                <strong>Confirmation Date:</strong>
+                                <p t-field="o.contract_id.date_start"/>
+                            </div>
+                            <div class="col-xs-2" t-if="o.contract_id.visa_no">
+                                <strong>Visa No</strong>
+                                <p t-field="o.contract_id.visa_no"/>
+                            </div>
+                            <div class="col-xs-2" t-if="o.contract_id.permit_no">
+                                <strong>Work Permit:</strong>
+                                <p t-field="o.contract_id.permit_no"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_employee">
+        <t t-call="report.html_container">
+            <t t-foreach="doc_ids" t-as="doc_id">
+                <t t-raw="translate_doc(doc_id, doc_model, 'user_id.partner_id.lang', 'hr_addsol.report_employee_document')"/>
+            </t>
+        </t>
+    </template>
+</data> 
+</openerp>

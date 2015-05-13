@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2015-2016 Addition IT Solutions Pvt. Ltd. (<http://www.aitspl.com>).
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,9 +19,28 @@
 #
 ##############################################################################
 
-import hr_addsol
-import hr_addsol_scheduler
-import res_config
-import report
+import time
+from openerp.osv import osv
+from openerp.report import report_sxw
+
+
+class employee_print(report_sxw.rml_parse):
+
+    def __init__(self, cr, uid, name, context):
+        super(employee_print, self).__init__(cr, uid, name, context=context)
+        self.localcontext.update({
+            'time': time,
+            'get_employees': self._get_employees,
+        })
+        
+    def _get_employees(self, data):
+        emp_name = data['form']['name']
+        return emp_name
+
+class report_hr_employee(osv.AbstractModel):
+    _name = 'report.hr_addsol.report_employee'
+    _inherit = 'report.abstract_report'
+    _template = 'hr_addsol.report_employee'
+    _wrapped_report_class = employee_print
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
