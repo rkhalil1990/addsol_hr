@@ -170,7 +170,7 @@
                 </div>
             </div>
             <div class="oe_footer">
-                Powered by <a href="http://www.openerp.com" target="_blank"><span>Odoo</span></a>
+                Powered by <a href="http://www.aitspl.com" target="_blank"><span>Addsol</span></a>
             </div>
         </template>
         <template id="web.menu_secondary_submenu">
@@ -260,7 +260,7 @@
                             <a class="oe_login_manage_db" t-attf-href="/web/database/manager{{ '?debug' if debug else '' }}">Manage Databases</a>
                             <span class="oe_footer_seperator"> | </span>
                         </t>
-                        <a href="https://www.odoo.com" target="_blank">Powered by <span>Odoo</span></a>
+                        <a href="https://www.aitspl.com" target="_blank">Powered by <span>Addsol</span></a>
                     </div>
                 </div>
             </t>
