@@ -2,6 +2,13 @@
 <openerp>
     <data noupdate="1">
 
+        <record id="base.group_hr_line_manager" model="res.groups">
+            <field name="name">Line Manager</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">The user will be able to approve leave requests and expenses created by employees.</field>
+        </record>
+
         <record model="ir.rule" id="ir_rule_public_holiday_calendar">
             <field name="name">Public Holiday Calendar Rule</field>
             <field name="model_id" ref="model_addsol_hr_calendar"/>

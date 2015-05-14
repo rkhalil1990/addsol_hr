@@ -6,3 +6,5 @@ access_resource_calendar_attendance_officer,resource.calendar.attendance.officer
 access_hr_addsol_calendar,hr.addsol.calendar officer,model_addsol_hr_calendar,base.group_hr_user,1,1,1,1
 access_hr_addsol_calendar_emp,hr.addsol.calendar employee,model_addsol_hr_calendar,base.group_user,1,0,0,0
 hr_holidays.access_hr_holydays_status_employee,hr.holidays.status employee,hr_holidays.model_hr_holidays_status,base.group_user,1,1,0,0
+access_resource_calendar_user,resource.calendar.employee,resource.model_resource_calendar,base.group_user,1,0,0,0
+access_resource_calendar_attendance_user,resource.calendar.attendance.employee,resource.model_resource_calendar_attendance,base.group_user,1,0,0,0
