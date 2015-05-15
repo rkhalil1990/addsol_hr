@@ -42,7 +42,6 @@ class import_install_data(osv.TransientModel):
         zip_data = base64.decodestring(record.folder_path)
         fp = BytesIO()
         fp.write(zip_data)
-        errors = dict()
         with zipfile.ZipFile(fp, "r") as z:
             with openerp.tools.osutil.tempdir() as module_dir:
                 z.extractall(module_dir)
@@ -53,7 +52,7 @@ class import_install_data(osv.TransientModel):
                         update_path = self.convert_csv_to_xml(cr, uid, path, context)
                         module_obj.import_module(cr, uid, mod_name, update_path, force=False, context=context)
                     except Exception, e:
-                        errors[mod_name] = str(e)
+                        raise osv.except_osv(('Error!'),('%s'%e.message))
         return True
 
     def convert_csv_to_xml(self, cr, uid, folder_name, context=None):
