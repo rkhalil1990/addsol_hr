@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="addsol_import_install_data_wizard" model="ir.ui.view">
+            <field name="name">Import and Install Data</field>
+            <field name="model">import.install.data</field>
+            <field name="arch" type="xml">
+                <form string="Install Data">
+                    <label string="Select the .zip folder containing all .csv files" colspan="2"/>
+                    <group col="4">
+                        <field name="folder_path"/>
+                    </group>
+                    <footer>
+                        <button name="install_data" string="Install Data" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_addsol_import_install_data_wizard" model="ir.actions.act_window">
+            <field name="name">Install Data</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">import.install.data</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_addsol_import_install_data_wizard"
+                action="action_addsol_import_install_data_wizard"
+                parent="hr.menu_hr_configuration"
+                groups="base.group_hr_manager"
+                sequence="0"/>
+
+    </data>
+</openerp>

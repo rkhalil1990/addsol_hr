@@ -37,7 +37,7 @@
             </field>
         </record>
 
-        <record id="addsol_view_attendance_tree" model="ir.ui.view">
+        <!--record id="addsol_view_attendance_tree" model="ir.ui.view">
             <field name="name">addsol.hr.attendance.tree</field>
             <field name="model">hr.attendance</field>
             <field name="arch" type="xml">
@@ -47,7 +47,7 @@
                     <field name="action_desc"/>
                 </tree>
             </field>
-        </record>
+        </record-->
 
         <record id="hr_attendance.open_view_attendance" model="ir.actions.act_window">
             <field name="name">Attendances</field>
@@ -55,7 +55,7 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree</field>
             <field name="context">{"search_default_today":1}</field>
-            <field name="view_id" ref="addsol_view_attendance_tree"/>
+            <!--field name="view_id" ref="addsol_view_attendance_tree"/-->
             <field name="search_view_id" ref="hr_attendance.view_hr_attendance_filter" />
             <field name="help">The Time Tracking functionality aims to manage employee attendances from Sign in/Sign out actions. You can also link this feature to an attendance device using Odoo's web service features.</field>
         </record>

@@ -18,11 +18,6 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
-import hr_addsol
-import hr_addsol_scheduler
-import res_config
-import report
-import wizard
+import import_install_data
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

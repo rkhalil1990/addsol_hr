@@ -54,7 +54,7 @@ Few security rules for an employee:
     
 """,
     'images': [],
-    'depends': ['hr_holidays', 'hr_timesheet_sheet', 'l10n_in_hr_payroll', 'hr_recruitment'],
+    'depends': ['hr_holidays', 'hr_timesheet_sheet', 'l10n_in_hr_payroll', 'base_import_module'],
     'data': [
         'security/ir.model.access.csv',
         'security/ir_rule.xml',
@@ -64,6 +64,7 @@ Few security rules for an employee:
         'res_config_view.xml',
         'hr_addsol_report.xml',
         'views/report_employee.xml',
+        'wizard/import_install_data_view.xml',
      ],
     'demo': [],
     'test': [],
