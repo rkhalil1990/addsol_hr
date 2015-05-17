@@ -108,4 +108,48 @@ class addsol_hr_attendance(osv.osv):
                     leave_id = leave_obj.create(cr, uid, values, context=context)
 #                     leave_obj.holidays_validate(cr, uid, [leave_id], context=context)
 
+class addsol_hr_payroll(osv.osv):
+    _inherit= 'hr.payslip'
+    
+    def create(self, cr, uid, vals, context=None):
+        payslip_id = super(addsol_hr_payroll, self).create(cr, uid, vals, context)
+        self.count_attendance(cr, uid, vals, context=context)
+        return payslip_id
+    
+    def count_attendance(self, cr, uid, payslip, context=None):
+        attendance_obj = self.pool.get('hr.attendance')
+        holiday_obj = self.pool.get('hr.holidays')
+        holiday_status_obj = self.pool.get('hr.holidays.status')
+        employee_obj = self.pool.get('hr.employee')
+        date_from = payslip.get('date_from') or time.strftime('%Y-%m-01')
+        date_to = payslip.get('date_to') or time.strftime('%Y-%m-31')
+        employee_id = payslip.get('employee_id')
+        worked_days = payslip.get('worked_days_line_ids')
+#         calendar_id = contract_obj.browse(cr, uid, payslip.get('contract_id'), context=context).working_hours 
+        attendance_ids = attendance_obj.search(cr, uid, [('name','>=',date_from),
+                                                         ('name','<=',date_to),
+                                                         ('employee_id','=',employee_id)])
+        present_days = 0.0
+        for att in attendance_obj.browse(cr, uid, attendance_ids, context=context):
+            if att.action == 'sign_out':
+                att_val = employee_obj._get_daily_attendance(cr, uid, att)
+                if att.total_worked_hours >= att_val.get('working_hours'):
+                    present_days += 1
+#         print ">>>>>>>>>>>>>>>>",employee_id, present_days, worked_days
+#         for days in worked_days:
+#             line = days[2]
+#             working_days = unpaid_days = 0
+#             if line.get('code') == 'WORK100':
+#                 working_days = line.get('number_of_days')
+#             if line.get('code') == 'Unpaid':
+#                 unpaid_days = line.get('numer_of_days')
+#         type_ids = holiday_status_obj.search(cr, uid, [('type','=','paid')], context=context)
+#         if present_days < (working_days + unpaid_days):
+#             leave_ids = holiday_obj.search(cr, uid, [('date_from','>=',date_from),
+#                                          ('date_to','<=',date_to),
+#                                          ('employee_id','=',employee_id),
+#                                          ('holiday_status_id','in',type_ids),
+#                                          ('type','=','remove')])
+
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
