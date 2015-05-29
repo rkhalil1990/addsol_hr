@@ -8,8 +8,8 @@
             <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>
             <field name="arch" type="xml">
                 <xpath expr="//group[@string='Contract']/field[@name='vehicle_distance']" position="after">
-                    <field name="no_of_years"/> years
-                    <field name="total_days"/>
+                    <!--field name="no_of_years"/> years
+                    <field name="total_days"/-->
                     <field name="eligible"/>
                 </xpath>
                 <xpath expr="//field[@name='user_id']" position="replace">
@@ -103,7 +103,9 @@
             <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='categ_id']" position="before">
+                    <field name="days_to_allocate"/>
                     <field name="type"/>
+                    <field name="company_id" groups="base.group_hr_manager,base.group_multi_company"/>
                     <field name="no_of_days" attrs="{'invisible': [('type','!=','sl')], 'required': [('type','=','sl')]}"/>
                 </xpath>
             </field>
@@ -215,6 +217,19 @@
             <field name="view_type">form</field>
             <field name="view_mode">calendar,tree,form</field>
             <field name="view_id" eval="addsol_hr_calendar_tree"/>
+        </record>
+
+        <record id="hr_addsol_leaves_company" model="ir.ui.view">
+            <field name="name">res.company.addsol</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="hr_timesheet_sheet.hr_timesheet_sheet_company"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='timesheets_grp']" position="after">
+                    <group string="Holidays">
+                        <field name="allocation_range"/>
+                    </group>
+                </xpath>
+            </field>
         </record>
 
 

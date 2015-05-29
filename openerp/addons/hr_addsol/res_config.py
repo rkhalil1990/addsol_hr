@@ -26,6 +26,22 @@ class addsol_hr_attendance_payroll_config_settings(osv.osv_memory):
     _columns = {
         'module_hr_addsol_payroll': fields.boolean('Generate Payroll Based on Attendance',
             help="This installs the module hr_addsol_payroll."),
+        'allocation_range': fields.selection([('month','Month'),('year','Year')],
+            'Allocate automatic leaves every', required=True,
+            help="Periodicity on which you want automatic allocation of leaves to eligible employees."),
     }
+    
+    def get_default_allocation(self, cr, uid, fields, context=None):
+        user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
+        return {
+            'allocation_range': user.company_id.allocation_range,
+        }
+
+    def set_default_allocation(self, cr, uid, ids, context=None):
+        config = self.browse(cr, uid, ids[0], context)
+        user = self.pool.get('res.users').browse(cr, uid, uid, context)
+        user.company_id.write({
+            'allocation_range': config.allocation_range,
+        })
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

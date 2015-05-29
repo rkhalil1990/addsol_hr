@@ -30,12 +30,7 @@ class employee_print(report_sxw.rml_parse):
         super(employee_print, self).__init__(cr, uid, name, context=context)
         self.localcontext.update({
             'time': time,
-            'get_employees': self._get_employees,
         })
-        
-    def _get_employees(self, data):
-        emp_name = data['form']['name']
-        return emp_name
 
 class report_hr_employee(osv.AbstractModel):
     _name = 'report.hr_addsol.report_employee'

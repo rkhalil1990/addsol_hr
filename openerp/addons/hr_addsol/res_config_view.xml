@@ -2,10 +2,16 @@
 <openerp>
     <data>
         <record id="view_hr_config_inherit_addsol" model="ir.ui.view">
-            <field name="name">hr.config.settings.payroll.addsol</field>
+            <field name="name">hr.config.settings.addsol</field>
             <field name="model">hr.config.settings</field>
             <field name="inherit_id" ref="hr.view_human_resources_configuration"/>
             <field name="arch" type="xml">
+                <xpath expr="//label[@for='module_hr_holidays']" position="after">
+                    <div>
+                        <label for="allocation_range"/>
+                        <field name="allocation_range" class="oe_inline"/>
+                    </div>
+                </xpath>
                 <xpath expr="//div[@name='hr_payroll']" position="after">
                     <div>
                         <field name="module_hr_addsol_payroll" class="oe_inline"/>

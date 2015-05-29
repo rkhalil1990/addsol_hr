@@ -115,19 +115,18 @@ class addsol_hr_employee(osv.osv):
         """
         obj_contract = self.pool.get('hr.contract')
         res = {}
-        for emp in self.browse(cr, uid, ids, context=context):
-            contract_ids = obj_contract.search(cr, uid, [('employee_id','=',emp.id),], order='date_start', context=context)
-            res[emp.id] = False
-            for contract in obj_contract.browse(cr, uid, contract_ids, context=context):
-                if contract.trial_date_start and contract.trial_date_end:
-                    if contract.date_start <= time.strftime('%Y-%m-%d'):
-                        res[emp.id] = True
+        for contract in obj_contract.browse(cr, uid, ids, context=context):
+            res[contract.employee_id.id] = False
+            if contract.trial_date_start and contract.trial_date_end:
+                if contract.date_start <= time.strftime('%Y-%m-%d'):
+                    res[contract.employee_id.id] = True
         return res
 
     _columns = {
         'no_of_years': fields.function(_calc_no_of_years, type='float', digits=(16,2), string='Years of Service'),
         'total_days': fields.function(_count_total_days, type='integer', string="Total Present Days"),
-        'eligible': fields.function(_eligible_for_pl, type='boolean', string='Eligible for PL?'),
+        'eligible': fields.function(_eligible_for_pl, type='boolean', string='Eligible for PL?', 
+                                    store={'hr.contract': (lambda self, cr, uid, ids, c={}: ids, ['date_start'], 10)}),
     }
 
     def create(self, cr, uid, vals, context=None):
@@ -182,7 +181,8 @@ class resource_calendar(osv.osv):
 class addsol_hr_holidays_status(osv.osv):
     _inherit = "hr.holidays.status"
     _columns = {
-        'no_of_days': fields.integer('No. of Days'), # Used in case of Sick Leaves
+        'no_of_days': fields.integer('Allowed Sick Days', help="If sick leaves exceed the given number of days, "\
+                                     "then employee has to attach medical certificate."), # Used in case of Sick Leaves
         'type': fields.selection([('paid','Paid Leaves'),
                                   ('unpaid','Unpaid Leaves'),
                                   ('sl','Sick Leaves'),
@@ -190,8 +190,23 @@ class addsol_hr_holidays_status(osv.osv):
                                   ('comp','Compensatory Leaves'),
                                   ('request','Request Leaves'),
                                   ('half','Half Day Leave')], 'Basic Types', required=True),
+        'days_to_allocate': fields.float('Days to Allocate', 
+                                         help="In automatic allocation of leaves, "\
+                                         "given days will be allocated every month / year."),
+        'company_id': fields.many2one('res.company','Company', required=True),
+    }
+
+    _defaults = {
+        'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'hr.holidays.status', context=c),
     }
     
+    def search(self, cr, uid, args, offset=0, limit=None, order=None,
+            context=None, count=False):
+        user_obj = self.pool.get('res.users')
+        user_rec = user_obj.browse(cr, uid, uid, context)
+        args.append(('company_id','in',[comp.id for comp in user_rec.company_ids]))
+        return super(addsol_hr_holidays_status, self).search(cr, uid, args, offset, limit, order, context, count)
+
 class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
     
@@ -330,6 +345,18 @@ class addsol_hr_calendar(osv.osv):
     
     _defaults = {
         'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'addsol.hr.calendar', context=c),
+    }
+
+class res_company(osv.osv):
+    _inherit = 'res.company'
+    _columns = {
+        'allocation_range': fields.selection([('month','Month'),('year','Year')],
+            'Allocation Range', required=True,
+            help="Periodicity on which you want automatic allocation of leaves to eligible employees."),
+    }
+    
+    _defaults = {
+        'allocation_range': 'month',
     }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

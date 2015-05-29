@@ -20,7 +20,7 @@
 ##############################################################################
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
 import pytz
@@ -78,48 +78,29 @@ class addsol_hr_attendance(osv.osv):
 class addsol_hr_holidays(osv.osv):
     _inherit = "hr.holidays"
     
-    def check_late_coming_employees(self, cr, uid, context=None):
+    def check_late_coming_employees(self, cr, uid, attendance_ids, context=None):
         employee_obj = self.pool.get('hr.employee')
         leave_status_obj = self.pool.get('hr.holidays.status')
         attendance_obj = self.pool.get('hr.attendance')
-        date_from  = datetime.strftime((datetime.now() + relativedelta(day=1)),'%Y-%m-%d %H:%M:%S')
-        date_to  = datetime.strftime((datetime.now() + relativedelta(day=31)),'%Y-%m-%d %H:%M:%S')
-        attendance_ids = attendance_obj.search(cr, uid, [('name','>=',date_from),('name','<=',date_to),('action','=','sign_in')], context=context)
         holiday_status_id = leave_status_obj.search(cr, uid, [('type','=','half')], context=context)
-        current_date = time.strftime('%Y-%m-%d')
-        res = {}
         for attendance in attendance_obj.browse(cr, uid, attendance_ids, context=context):
-            half_leave_ids = self.search(cr, uid, [('date_from','=',current_date),
-                                                       ('employee_id','=',attendance.employee_id.id),
-                                                       ('type','=','remove'),
-                                                       ('holiday_status_id','=', holiday_status_id and holiday_status_id[0])])
+            attendance_dt = _get_timezone_employee(attendance.employee_id, attendance.name)
+            half_leave_ids = self.search(cr, uid, [('date_from','>=',attendance_dt.strftime('%Y-%m-%d 00:00:00')),
+                                                   ('date_to','<=',attendance_dt.strftime('%Y-%m-%d 23:59:59')),
+                                                   ('employee_id','=',attendance.employee_id.id),
+                                                   ('type','=','remove'),
+                                                   ('holiday_status_id','=', holiday_status_id and holiday_status_id[0])])
             if half_leave_ids:
                 continue
-            attendance_dt = _get_timezone_employee(attendance.employee_id, attendance.name)
             calendar_id = attendance.employee_id.contract_id.working_hours or False
-            if not res.has_key(attendance.employee_id.id):
-                res[attendance.employee_id.id] = {attendance_dt.strftime('%Y-%m-%d'): 0}
-            if attendance_dt.strftime('%Y-%m-%d') in res[attendance.employee_id.id].keys():
-                continue
             if calendar_id:
                 sign_in_time = attendance_dt.strftime("%H.%M")
                 calendar_val = employee_obj._get_daily_attendance(cr, uid, attendance)
                 late_time = calendar_val.get('entry_time') + (calendar_id.late_time * 0.01)
-                days = res[attendance.employee_id.id].get(attendance_dt.strftime('%Y-%m-%d'),False)
-                if days and float(sign_in_time) > late_time or \
-                    calendar_val.get('worked_hours') < calendar_val.get('working_hours'):
-                    days += 1
-                if res[attendance.employee_id.id].get(attendance_dt.strftime('%Y-%m-%d')) >= calendar_id.late_days:
-                    self.create(cr, uid, {
-                                    'name': 'Half day - For late coming',
-                                    'date_from': current_date,
-                                    'date_to': current_date,
-                                    'number_of_days_temp': 0.5,
-                                    'holiday_status_id': holiday_status_id and holiday_status_id[0],
-                                    'employee_id': attendance.employee_id.id,
-                                    'type': 'remove',
-                                })
-        return True
+                if attendance.action == 'sign_in' and (float(sign_in_time) > late_time or \
+                    calendar_val.get('worked_hours') < calendar_val.get('working_hours')):
+                    return True
+        return False
 
     def run_monthly_scheduler(self, cr, uid, context=None):
         """ Runs at the end of every month to allocate PL, CL & SL to all 
@@ -127,38 +108,53 @@ class addsol_hr_holidays(osv.osv):
         """
         employee_obj = self.pool.get('hr.employee')
         leave_status_obj = self.pool.get('hr.holidays.status')
-        date_from  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=1)),'%Y-%m-%d %H:%M:%S')
-        date_to  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=31)),'%Y-%m-%d %H:%M:%S')
-        
-        employee_ids = employee_obj.search(cr, uid, ['|',('total_days','>=',240),('eligible','=',True)], context=context)
-        holiday_status_ids = leave_status_obj.search(cr, uid, [('type','in',('paid','sl','cl'))], context=context)
+        date_from  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=1)),'%Y-%m-%d')
+        date_to  = datetime.strftime((datetime.now() + relativedelta(months=1) + relativedelta(day=31)),'%Y-%m-%d')
+
+        employee_ids = employee_obj.search(cr, uid, [('eligible','=',True)], context=context)
+        holiday_status_ids = leave_status_obj.search(cr, uid, [], context=context)
         for holiday_status in leave_status_obj.browse(cr, uid, holiday_status_ids, context=context):
             for emp in employee_obj.browse(cr, uid, employee_ids, context=context):
-                allocate_ids = self.search(cr, uid, [('date_from','=',date_from), 
-                                                          ('date_to','=',date_to), 
-                                                          ('type','=','add'), 
-                                                          ('employee_id','=',emp.id),
-                                                          ('holiday_status_id','=',holiday_status.id)], context=context)
-                if allocate_ids:
-                    break
-                allocate_days = 1.0
-                if time.strftime('%B') == 'December':
-                    days_left = leave_status_obj.get_days(cr, uid, [holiday_status.id], emp.id, context=context)
-                    days_left = days_left[holiday_status.id]['remaining_leaves']
-                    if days_left <= 12:
-                        allocate_days += days_left
-                vals = {
-                        'name': 'Monthly Allocation of '+ holiday_status.type,
-                        'number_of_days_temp': allocate_days,
-                        'date_from': date_from,
-                        'date_to': date_to,
-                        'employee_id': emp.id,
-                        'holiday_status_id': holiday_status.id,
-                        'type': 'add',
-                }
-                if holiday_status.type in ('cl','sl'):
-                    vals.update({'number_of_days_temp': 0.5})
-                leave_id = self.create(cr, uid, vals, context=context)
-                self.holidays_validate(cr, uid, [leave_id], context=context)
+                allocation_range = emp.user_id.company_id and emp.user_id.company_id.allocation_range or 'month'
+                if holiday_status.company_id.id and (emp.user_id.company_id and emp.user_id.company_id.id):
+                    allocate_days = holiday_status.days_to_allocate
+                if allocate_days > 0:
+                    if time.strftime('%B') == 'December':
+                        days_left = leave_status_obj.get_days(cr, uid, [holiday_status.id], emp.id, context=context)
+                        days_left = days_left[holiday_status.id]['remaining_leaves']
+                        if days_left <= 12:
+                            allocate_days += days_left
+                    if allocation_range == 'month':
+                        allocate_ids = self.search(cr, uid, [('date_from','>=',date_from), 
+                                                                  ('date_to','<=',date_to), 
+                                                                  ('type','=','add'), 
+                                                                  ('employee_id','=',emp.id),
+                                                                  ('holiday_status_id','=',holiday_status.id)], context=context)
+                        if allocate_ids:
+                            continue
+                        vals = {
+                                'name': 'Monthly Allocation of '+ holiday_status.type,
+                                'number_of_days_temp': allocate_days,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                                'employee_id': emp.id,
+                                'holiday_status_id': holiday_status.id,
+                                'type': 'add',
+                        }
+                    if allocation_range == 'year':
+                        allocate_ids = self.search(cr, uid, [('type','=','add'), 
+                                                             ('employee_id','=',emp.id),
+                                                             ('holiday_status_id','=',holiday_status.id)], context=context)
+                        if allocate_ids:
+                            continue
+                        vals = {
+                                'name': 'Yearly Allocation of '+ holiday_status.type,
+                                'number_of_days_temp': allocate_days,
+                                'employee_id': emp.id,
+                                'holiday_status_id': holiday_status.id,
+                                'type': 'add',
+                        }
+                    leave_id = self.create(cr, uid, vals, context=context)
+                    self.holidays_validate(cr, uid, [leave_id], context=context)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
