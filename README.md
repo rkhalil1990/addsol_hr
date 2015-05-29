@@ -17,6 +17,7 @@ Other Features:
     * Automatic process for allocating leaves at the end of every month.
     * Checks employee's late comings of whole month at the end of every month.
     * Leave Type: (Half Day): counts number of days 0.5 in case half day leave type is selected
+    * Attendances are taken into account at the time of creating payslips.
 
 Few security rules for an employee:
 -----------------------------------
