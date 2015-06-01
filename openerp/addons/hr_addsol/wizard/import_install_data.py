@@ -80,7 +80,7 @@ class import_install_data(osv.TransientModel):
                         fieldnames = row
                     else:
                         with open('res.partner.csv', 'wb') as partner_file:
-                            partner_fields = ['name', 'email']
+                            partner_fields = ['name', 'email', 'company_id']
                             writer = csv.DictWriter(partner_file, fieldnames=partner_fields)
                             writer.writeheader()
                             for i in range(len(fieldnames)):
@@ -88,11 +88,13 @@ class import_install_data(osv.TransientModel):
                                     d = {'name': row[i]}
                                 if fieldnames[i] == 'work_email':
                                     d.update({'email': row[i]})
+                                if fieldnames[i] == 'company_id':
+                                    d.update({'company_id': row[i]})
                             partner_data.append(d)
                             for v in partner_data:
                                 writer.writerow(v)
                         with open('res.users.csv', 'wb') as user_file:
-                            fields = ['name', 'email','login','partner_id']
+                            fields = ['name', 'email','login','partner_id', 'company_id']
                             writer = csv.DictWriter(user_file, fieldnames=fields)
                             writer.writeheader()
                             for i in range(len(fieldnames)):
@@ -100,6 +102,8 @@ class import_install_data(osv.TransientModel):
                                     d = {'name': row[i],'partner_id': row[i]}
                                 if fieldnames[i] == 'work_email':
                                     d.update({'email': row[i],'login': row[i]})
+                                if fieldnames[i] == 'company_id':
+                                    d.update({'company_id': row[i]})
                             data.append(d)
                             for v in data:
                                 writer.writerow(v)
@@ -146,4 +150,3 @@ class import_install_data(osv.TransientModel):
         return folder_name
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-

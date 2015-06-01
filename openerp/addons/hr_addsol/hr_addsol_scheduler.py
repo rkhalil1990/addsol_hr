@@ -115,46 +115,46 @@ class addsol_hr_holidays(osv.osv):
         holiday_status_ids = leave_status_obj.search(cr, uid, [], context=context)
         for holiday_status in leave_status_obj.browse(cr, uid, holiday_status_ids, context=context):
             for emp in employee_obj.browse(cr, uid, employee_ids, context=context):
-                allocation_range = emp.user_id.company_id and emp.user_id.company_id.allocation_range or 'month'
-                if holiday_status.company_id.id and (emp.user_id.company_id and emp.user_id.company_id.id):
+                if holiday_status.company_id.id == (emp.user_id.company_id and emp.user_id.company_id.id):
+                    allocation_range = emp.user_id.company_id and emp.user_id.company_id.allocation_range or 'month'
                     allocate_days = holiday_status.days_to_allocate
-                if allocate_days > 0:
-                    if time.strftime('%B') == 'December':
-                        days_left = leave_status_obj.get_days(cr, uid, [holiday_status.id], emp.id, context=context)
-                        days_left = days_left[holiday_status.id]['remaining_leaves']
-                        if days_left <= 12:
-                            allocate_days += days_left
-                    if allocation_range == 'month':
-                        allocate_ids = self.search(cr, uid, [('date_from','>=',date_from), 
-                                                                  ('date_to','<=',date_to), 
-                                                                  ('type','=','add'), 
-                                                                  ('employee_id','=',emp.id),
-                                                                  ('holiday_status_id','=',holiday_status.id)], context=context)
-                        if allocate_ids:
-                            continue
-                        vals = {
-                                'name': 'Monthly Allocation of '+ holiday_status.type,
-                                'number_of_days_temp': allocate_days,
-                                'date_from': date_from,
-                                'date_to': date_to,
-                                'employee_id': emp.id,
-                                'holiday_status_id': holiday_status.id,
-                                'type': 'add',
-                        }
-                    if allocation_range == 'year':
-                        allocate_ids = self.search(cr, uid, [('type','=','add'), 
-                                                             ('employee_id','=',emp.id),
-                                                             ('holiday_status_id','=',holiday_status.id)], context=context)
-                        if allocate_ids:
-                            continue
-                        vals = {
-                                'name': 'Yearly Allocation of '+ holiday_status.type,
-                                'number_of_days_temp': allocate_days,
-                                'employee_id': emp.id,
-                                'holiday_status_id': holiday_status.id,
-                                'type': 'add',
-                        }
-                    leave_id = self.create(cr, uid, vals, context=context)
-                    self.holidays_validate(cr, uid, [leave_id], context=context)
+                    if allocate_days > 0:
+                        if time.strftime('%B') == 'December':
+                            days_left = leave_status_obj.get_days(cr, uid, [holiday_status.id], emp.id, context=context)
+                            days_left = days_left[holiday_status.id]['remaining_leaves']
+                            if days_left <= 12:
+                                allocate_days += days_left
+                        if allocation_range == 'month':
+                            allocate_ids = self.search(cr, uid, [('date_from','>=',date_from), 
+                                                                      ('date_to','<=',date_to), 
+                                                                      ('type','=','add'), 
+                                                                      ('employee_id','=',emp.id),
+                                                                      ('holiday_status_id','=',holiday_status.id)], context=context)
+                            if allocate_ids:
+                                continue
+                            vals = {
+                                    'name': 'Monthly Allocation of '+ holiday_status.type,
+                                    'number_of_days_temp': allocate_days,
+                                    'date_from': date_from,
+                                    'date_to': date_to,
+                                    'employee_id': emp.id,
+                                    'holiday_status_id': holiday_status.id,
+                                    'type': 'add',
+                            }
+                        if allocation_range == 'year':
+                            allocate_ids = self.search(cr, uid, [('type','=','add'), 
+                                                                 ('employee_id','=',emp.id),
+                                                                 ('holiday_status_id','=',holiday_status.id)], context=context)
+                            if allocate_ids:
+                                continue
+                            vals = {
+                                    'name': 'Yearly Allocation of '+ holiday_status.type,
+                                    'number_of_days_temp': allocate_days,
+                                    'employee_id': emp.id,
+                                    'holiday_status_id': holiday_status.id,
+                                    'type': 'add',
+                            }
+                        leave_id = self.create(cr, uid, vals, context=context)
+                        self.holidays_validate(cr, uid, [leave_id], context=context)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

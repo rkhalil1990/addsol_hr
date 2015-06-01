@@ -42,7 +42,7 @@
 
         <!-- Schedulers -->
         <record model="ir.cron" id="allocate_leaves_on_month_end">
-           <field name="name">Allocate automatic leaves</field>
+           <field name="name">Automatic Leave Allocation</field>
            <field name="interval_number">1</field>
            <field name="interval_type">months</field>
            <field name="numbercall">-1</field>

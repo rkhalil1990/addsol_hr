@@ -200,6 +200,13 @@ class addsol_hr_holidays_status(osv.osv):
         'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'hr.holidays.status', context=c),
     }
     
+    def name_search(self, cr, user, name, args=None, operator='ilike', context=None, limit=100):
+        user_obj = self.pool.get('res.users')
+        user_rec = user_obj.browse(cr, user, user, context)
+        args.append(('company_id','in',[comp.id for comp in user_rec.company_ids]))
+        ids = self.search(cr, user, args, limit=limit, context=context)
+        return self.name_get(cr, user, ids, context=context)
+    
     def search(self, cr, uid, args, offset=0, limit=None, order=None,
             context=None, count=False):
         user_obj = self.pool.get('res.users')
