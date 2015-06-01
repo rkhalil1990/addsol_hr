@@ -116,7 +116,7 @@ class addsol_hr_employee(osv.osv):
         obj_contract = self.pool.get('hr.contract')
         res = {}
         for contract in obj_contract.browse(cr, uid, ids, context=context):
-            res[contract.employee_id.id] = False
+#             res[contract.employee_id.id] = False
             if contract.trial_date_start and contract.trial_date_end:
                 if contract.date_start <= time.strftime('%Y-%m-%d'):
                     res[contract.employee_id.id] = True
