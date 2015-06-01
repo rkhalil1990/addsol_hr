@@ -15,5 +15,9 @@
             <field name="domain_force">['|',('company_id','=',user.company_id.id),('company_id','=',False)]</field>
         </record>
 
+        <record id="hr_payroll.property_rule_employee_payslip" model="ir.rule">
+            <field name="groups" eval="[(4,ref('base.group_hr_user')),(4,ref('base.group_user'))]"/>
+        </record>
+
     </data>
 </openerp>
