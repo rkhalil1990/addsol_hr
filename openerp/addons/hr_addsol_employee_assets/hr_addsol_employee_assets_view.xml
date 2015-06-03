@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+		
+		<record model="ir.ui.view" id="hr_addsol_employee_assets_tree">
+            <field name="name">hr.addsol.employee.assets.tree</field>
+            <field name="model">hr.addsol.employee.assets</field>
+            <field name="arch" type="xml">
+                <tree string="Request For Asset" >
+                	<field name="name"/>                    
+                    <field name="employee_id"/>    
+                    <field name="product_id"/>                            
+                    <field name="date_from"/>    
+                    <field name="date_to"/> 
+                    <field name="quantity"/> 
+                    <field name="state"/>        
+                </tree>
+            </field>
+        </record>
+        <record id="addsol_hr_employee_assets_form" model="ir.ui.view">
+            <field name="name">addsol.hr.employee.assets.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                	<page string="History of Asset">
+                		<group>
+                			<field name="asset_ids" nolabel="1">
+                				<tree string="Asset History">
+                					<field name="employee_id"/>
+                					<field name="name"/>
+                					<field name="product_id"/>
+                					<field name="allocate_date_from"/>
+                					<field name="allocate_date_to"/>
+                					<field name="quantity"/>
+                					<field name="return_date" />
+                					<field name="state" />
+                					
+                				</tree>
+                			</field>
+                			
+                		</group>
+                	</page>
+                </notebook>
+            </field>
+        </record>
+        
+        
+        <record model="ir.ui.view" id="hr_addsol_employee_assets_form">
+            <field name="name">hr.addsol.employee.assets.form</field>
+            <field name="model">hr.addsol.employee.assets</field>
+            <field name="arch" type="xml">
+                <form string="Request For Asset" >  
+                	<header>
+                        <button string="Send" name="request_send" states="draft" type="object" class="oe_highlight" />
+                        <button string="Approve" name="request_approve" states="confirm" type="object" class="oe_highlight" groups="base.group_hr_manager" />
+                        <button string="Refuse" name="refuse" states="draft,confirm,validate" type="object"  />                        
+                        <button name="reset" string="Reset to Draft" states="cancel" type="object" groups="base.group_hr_manager"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,validate"/>
+                    </header>            	
+                    <sheet>                       
+                        <group>
+                            <field name="name" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />
+                            <field name="employee_id" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
+                            <field name="type" />
+                        </group>
+                        <group>
+                        	<field name="product_id" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />                 
+                            <field name="date_from" attrs="{'invisible': [('type','=','modify')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
+                            <field name="date_to" attrs="{'invisible': [('type','=','modify')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
+                               
+                        </group>
+                        <group>
+                        	<field name="quantity" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />   
+                        	<field name="allocate_date_from" groups="base.group_hr_manager" attrs="{'invisible': [('type','=','modify')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
+                        	<field name="allocate_date_to" groups="base.group_hr_manager" attrs="{'invisible': [('type','=','modify')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
+                        	<field name="return_date" groups="base.group_hr_manager" attrs="{'visible': [('state','=','validate')] , 'invisible': [('type','=','modify')]}"/>    
+                        </group>
+                        
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="open_hr_addsol_employee_assets" model="ir.actions.act_window">
+            <field name="name">Request for Asset</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_id" ref="hr_addsol_employee_assets_tree" />
+            <field name="res_model">hr.addsol.employee.assets</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+		
+		<record model="ir.ui.view" id="hr_addsol_employee_assets_request_approve_tree">
+            <field name="name">hr.addsol.employee.assets.request.approve.tree</field>
+            <field name="model">hr.addsol.employee.assets</field>
+            <field name="arch" type="xml">
+                <tree string="Request For Asset to Approve" >               	                 
+                    <field name="allocate_date_from"/>    
+                    <field name="allocate_date_to"/>                    
+                    <field name="state"/>        
+                    <field name="return_date" />
+                </tree>
+            </field>
+        </record>
+		
+		
+		
+		<record id="open_hr_addsol_employee_assets_request_approve" model="ir.actions.act_window">
+            <field name="name">Request for Asset to Approve</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_id" ref="hr_addsol_employee_assets_request_approve_tree" />
+            <field name="res_model">hr.addsol.employee.assets</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+		
+		
+        <!-- Menus -->
+        <menuitem name="Request" parent="hr.menu_hr_root" id="menu_open_request_for_asset" sequence="20"/>
+        <menuitem parent="menu_open_request_for_asset" id="menu_hr_addsol_employee_assets" action="open_hr_addsol_employee_assets"/>
+		<menuitem parent="menu_open_request_for_asset" id="menu_hr_addsol_employee_assets_request_approve" action="open_hr_addsol_employee_assets_request_approve" groups="base.group_hr_manager"/>
+		
+    </data>
+</openerp>
