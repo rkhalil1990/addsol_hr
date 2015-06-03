@@ -4,7 +4,7 @@
         <report 
             id="action_report_hremployee" 
             model="hr.employee" 
-            string="Employee Data"
+            string="My Complete Info"
             report_type="qweb-pdf"
             name="hr_addsol.report_employee" 
             file="hr_addsol.report_employee"

@@ -54,6 +54,14 @@ class addsol_hr_payroll(osv.osv):
                                          dtstart=parser.parse(date_from),
                                          until=parser.parse(date_to)))
             days = 0
+            leave_dates = []
+            domain = [('type','=','remove'),('date_from','>=',date_from),('date_to','<=',date_to)]
+            leave_ids = leave_obj.search(cr, uid, domain + [('employee_id','=',employee_id)], context=context)
+            for leave in leave_obj.browse(cr, uid, leave_ids, context):
+                for leave_date in list(rrule.rrule(rrule.DAILY,
+                                         dtstart=parser.parse(leave.date_from),
+                                         until=parser.parse(leave.date_to))):
+                    leave_dates.append(leave_date.strftime('%Y-%m-%d 00:00:00'))
             for dt in dates:
                 dh = calendar_obj.get_working_hours_of_date(cr=cr, uid=uid,
                                                              id=calendar.id,
@@ -61,13 +69,14 @@ class addsol_hr_payroll(osv.osv):
                                                              resource_id=employee_id,
                                                              context=context)
                 if dh != 0.0:
-                    attendance_ids = attendance_obj.search(cr, uid, [('name','>=',dt.strftime('%Y-%m-%d %H:%M:%S')),
-                                                            ('name','<=',dt.strftime('%Y-%m-%d 23:59:59')),
+                    date_from = dt.strftime('%Y-%m-%d 00:00:00')
+                    date_to = dt.strftime('%Y-%m-%d 23:59:59')
+                    print date_from, date_to
+                    attendance_ids = attendance_obj.search(cr, uid, [('name','>=',date_from),
+                                                            ('name','<=',date_to),
                                                             ('employee_id','=',employee_id)])
                     if not attendance_ids:
-                        domain = [('type','=','remove'),('date_from','>=',dt.strftime('%Y-%m-%d 00:00:00')),('date_from','<=',dt.strftime('%Y-%m-%d 23:59:59'))]
-                        leave_ids = leave_obj.search(cr, uid, domain + [('employee_id','=',employee_id)], context=context)
-                        if not leave_ids:
+                        if date_from not in leave_dates:
                             holiday_status_id = leave_status_obj.search(cr, uid, [('type','=','unpaid')], context=context)
                             values = {
                                     'name': 'No Attendance Marked',
@@ -85,11 +94,9 @@ class addsol_hr_payroll(osv.osv):
                             days += 1
                             late_coming_date = dt
                     if days > calendar.late_days:
-                        domain = [('type','=','remove'),('date_from','>=',late_coming_date.strftime('%Y-%m-%d 00:00:00')),('date_from','<=',late_coming_date.strftime('%Y-%m-%d 23:59:59'))]
-                        leave_ids = leave_obj.search(cr, uid, domain + [('employee_id','=',employee_id)], context=context)
                         holiday_status_id = leave_status_obj.search(cr, uid, [('type','=','half')], context=context)
                         days = 0 # Re-initialize the counter
-                        if not leave_ids:
+                        if late_coming_date.strftime('%Y-%m-%d 00:00:00') not in leave_dates:
                             leave_obj.create(cr, uid, {
                                                 'name': 'Half day - For late coming',
                                                 'date_from': late_coming_date,

@@ -498,10 +498,10 @@ class Home(http.Controller):
             redirect = '/web?' + request.httprequest.query_string
         values['redirect'] = redirect
 
-        try:
-            values['databases'] = http.db_list()
-        except openerp.exceptions.AccessDenied:
-            values['databases'] = None
+#         try:
+#             values['databases'] = http.db_list()
+#         except openerp.exceptions.AccessDenied:
+#             values['databases'] = None
 
         if request.httprequest.method == 'POST':
             old_uid = request.uid

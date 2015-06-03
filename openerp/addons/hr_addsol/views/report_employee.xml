@@ -5,7 +5,11 @@
         <t t-call="report.html_container">
             <t t-call="report.external_layout">
                 <div class="page">
-                    <h2>Employee: <span t-field="o.name"/></h2>
+                    <div class="row">
+                        <div class="col-xs-6">
+                        </div>
+                    </div>
+                    <h2>Employee: <span style="text-align:center;" t-field="o.name"/></h2>
                 
                     <h3>Public Info</h3>
                     <table class="table table-condensed">
@@ -20,7 +24,7 @@
                         <tbody>
                             <tr>
                                 <td><span t-field="o.department_id.name"/></td>
-                                <td><span t-field="o.job_id.name"/></td>
+                                <td><span t-field="o.job_id"/></td>
                                 <td><span t-field="o.parent_id.name"/></td>
                                 <td><span t-field="o.work_location"/></td>
                             </tr>
@@ -44,11 +48,8 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><br t-field="o.address_home_id.street"/>
-                                        <br t-field="o.address_home_id.street2"/>
-                                        <br t-field="o.address_home_id.city"/> <span t-field="o.address_home_id.zip"/>
-                                        <br t-field="o.address_home_id.state_id.name"/>
-                                        <br t-field="o.address_home_id.country_id.name"/></td>
+                                    <td><address t-field="o.address_home_id"
+                                            t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}' /></td>
                                     <td><span t-field="o.birthday"/></td>
                                     <td><span t-field="o.place_of_birth"/></td>
                                     <td><span t-field="o.marital"/></td>
