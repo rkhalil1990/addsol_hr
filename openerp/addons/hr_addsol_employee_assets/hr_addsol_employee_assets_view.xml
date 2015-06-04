@@ -62,7 +62,7 @@
                         <group>
                             <field name="name" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />
                             <field name="employee_id" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                            <field name="type" />
+                            <field name="type" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />
                         </group>
                         <group>
                         	<field name="product_id" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />                 

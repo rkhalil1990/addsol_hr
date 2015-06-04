@@ -72,6 +72,28 @@ class hr_addsol_employee_assets(osv.osv):
         'type':'asset',
     }
     
+    def write(self,cr,uid,ids,vals,context=None):
+        res = super(hr_addsol_employee_assets, self).write(cr, uid, ids, vals, context=context)        
+        if vals.get('return_date',False):
+            
+            for prod_id in self.browse(cr, uid, ids):        
+                p_id = prod_id.product_id.id               
+                qty = prod_id.quantity
+                source_location = prod_id.product_id.property_stock_inventory.id
+                uom = prod_id.product_id.uom_id.id
+                prod_name = prod_id.product_id.name
+                location_obj = self.pool.get('stock.location')
+                destination_location = location_obj.search(cr,uid,[('name','=','Stock')])
+            
+                move_obj = self.pool.get('stock.move')
+                move_ids = move_obj.create(cr,uid,{'product_id':p_id,'name':prod_name,'product_uom_qty':qty,'product_uom':uom,'location_id':source_location,'location_dest_id':destination_location[0]})
+                
+                move_obj.action_done(cr, uid, [move_ids])
+        
+        return res
+           
+        
+    
     def request_send(self, cr, uid, ids, *args):       
         self.write(cr, uid, ids, {'state': 'confirm'})
         return True
