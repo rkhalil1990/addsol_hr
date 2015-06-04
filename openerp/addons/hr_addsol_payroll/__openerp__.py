@@ -39,9 +39,12 @@ Manage Payroll:
     
 """,
     'images': [],
-    'depends': ['hr_attendance','hr_payroll'],
+    'depends': ['hr_attendance','hr_payroll','l10n_in_hr_payroll'],
     'data': [
        'hr_addsol_payroll_data.xml',
+       'wizard/send_advice_to_bank_view.xml',
+       'hr_addsol_payroll_view.xml',
+       
      ],
     'demo': [],
     'test': [],

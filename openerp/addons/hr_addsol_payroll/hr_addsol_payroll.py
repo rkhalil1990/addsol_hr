@@ -20,7 +20,8 @@
 ##############################################################################
 from dateutil import rrule, parser
 
-from openerp.osv import osv
+
+from openerp.osv import fields, osv
 
 class addsol_hr_payroll(osv.osv):
     _inherit= 'hr.payslip'
@@ -106,4 +107,12 @@ class addsol_hr_payroll(osv.osv):
                                                 'employee_id': employee_id,
                                                 'type': 'remove',
                                             })
+                            
+                            
+class addsol_bank(osv.osv):
+    _inherit= 'res.bank'
+    
+    _columns = {
+        'url': fields.char('URL'),
+    }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

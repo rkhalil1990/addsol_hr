@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+		
+        <record id="hr_addsol_bank_view_form" model="ir.ui.view">
+            <field name="name">hr.addsol.bank.view.form</field>
+            <field name="model">res.bank</field>
+            <field name="inherit_id" ref="base.view_res_bank_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='bic']" position="after">                
+                        <field name="url"/>                                  
+                </xpath>
+            </field>
+        </record>
+        
+       <record id="view_hr_bank_advice_form_addsol" model="ir.ui.view">
+            <field name="name">hr.payroll.advice.form.addsol</field>
+            <field name="model">hr.payroll.advice</field>
+            <field name="inherit_id" ref="l10n_in_hr_payroll.view_hr_bank_advice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/header/button[@name='set_to_draft']" position="before">                
+                        <button name="%(action_addsol_send_advice_to_bank_wizard)d" string="Send to Bank" states="confirm" type="action" class="oe_highlight"/>                                
+                </xpath>
+            </field>
+        </record>
+		
+    </data>
+</openerp>
