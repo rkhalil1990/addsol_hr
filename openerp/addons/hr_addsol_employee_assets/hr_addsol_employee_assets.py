@@ -36,17 +36,17 @@ class hr_addsol_employee_assets(osv.osv):
          
 
     _columns = {
-        'name':fields.char('Description', size=64 ,required=True),
-        'employee_id': fields.many2one('hr.employee', 'Employee',required=True),
-        'product_id': fields.many2one('product.product', 'Request For'),
-        'date_from': fields.datetime('Request Date'),
-        'date_to': fields.datetime('End Date'),
-        'quantity': fields.float('Quantity'),
+        'name':fields.text('Description', states={'draft': [('readonly', False)]} , readonly=True, required=True),
+        'employee_id': fields.many2one('hr.employee', 'Employee', states={'draft': [('readonly', False)]} , readonly=True, required=True),
+        'product_id': fields.many2one('product.product', 'Request For' ,states={'draft': [('readonly', False)]} ,readonly=True),
+        'date_from': fields.datetime('Request Date', states={'draft': [('readonly', False)]}, readonly=True),
+        'date_to': fields.datetime('End Date', states={'draft': [('readonly', False)]}, readonly=True),
+        'quantity': fields.float('Quantity', states={'draft': [('readonly', False)]}, readonly=True),
         'state': fields.selection([('draft', 'To Submit'), ('cancel', 'Cancelled'),('confirm', 'To Approve'), ('validate', 'Approved'),('refuse', 'Refused')],
             'Status', readonly=True),
-        'allocate_date_from': fields.datetime('Allocation Date'),
-        'allocate_date_to': fields.datetime('Allocate Date To'),
-        'type': fields.selection([('asset','Asset Request'),('modify','Modify Information')], 'Request Type' , required=True),
+        'allocate_date_from': fields.datetime('Allocation Date', states={'confirm': [('readonly', False)]},readonly=True,),
+        'allocate_date_to': fields.datetime('Allocate Date To', states={'confirm': [('readonly', False)]},readonly=True,),
+        'type': fields.selection([('asset','Asset Request'),('modify','Modify Information')], 'Request Type' , states={'draft': [('readonly', False)]} , readonly=True, required=True),
         'return_date': fields.datetime('Date Returned'),
         
     }

@@ -66,23 +66,35 @@
                         <button name="reset" string="Reset to Draft" states="cancel" type="object" groups="base.group_hr_manager"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirm,validate"/>
                     </header>            	
-                    <sheet>                       
-                        <group>
-                            <field name="name" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />
-                            <field name="employee_id" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                            <field name="type" attrs="{'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />
+                    <sheet>               
+                    	<group>        
+                                                              
+                    		<field name="employee_id" />
+                    	</group>
+                    	
+                    	<group string="Request Details">
+                    		<label for="date_from" string="Request Date"/>
+                            <div>
+                            	<field name="date_from" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')]}" class="oe_inline"/> - <field name="date_to" attrs="{'invisible': [('type','=','modify')]}" class="oe_inline"/>
+                            </div>
+                            <field name="type" />
+                            <field name="product_id" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')]}"  />
+                        	<field name="quantity" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')]}" />
                         </group>
-                        <group>
-                        	<field name="product_id" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />                 
-                            <field name="date_from" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                            <field name="date_to" attrs="{'invisible': [('type','=','modify')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                               
+                        <group>                 
+                        	<field name="name"  placeholder="Write some details..." colspan="2"/>
+                        </group>                                                                                                
+                        <group string="Allocation" attrs="{'invisible': ['|',('type','=','modify'),('state','=','draft')]}" >    
+                            <label for="allocate_date_from" string="Allocation Date"/>
+                        	<div>              	   
+                        		<field name="allocate_date_from" attrs="{'required': ['|',('type', '=', 'asset'),('state','=','confirm')]}" groups="base.group_hr_manager" class="oe_inline"/> - <field name="allocate_date_to" groups="base.group_hr_manager" class="oe_inline" /> 
+                        	</div>                      	    
                         </group>
-                        <group>
-                        	<field name="quantity" attrs="{'invisible': [('type','=','modify')] , 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}" />   
-                        	<field name="allocate_date_from" groups="base.group_hr_manager" attrs="{'invisible': [('type','=','modify'),('state','=','draft'),('state','=','confirm')], 'required': [('type', '=', 'asset')] , 'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                        	<field name="allocate_date_to" groups="base.group_hr_manager" attrs="{'invisible': [('type','=','modify'),('state','=','draft'),('state','=','confirm')] , 'required': [('type', '=', 'asset')] ,'readonly':[('state','!=','draft'),('state','!=','confirm')]}"/>
-                        	<field name="return_date" groups="base.group_hr_manager" attrs="{'visible': [('state','=','validate')] , 'invisible': [('type','=','modify'),('state','=','draft')]}"/>    
+                        <group string="Return" attrs="{'invisible': [('state','in',['draft','confirm','refused'])]}">
+                        	<label for="return_date" string="Date Returned"/>
+                        	<div>
+                        		<field name="return_date" attrs="{'required': [('type', '=', 'asset'),('state','=','validate')]}" groups="base.group_hr_manager" />
+                        	</div>
                         </group>
                         
                     </sheet>
