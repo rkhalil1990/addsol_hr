@@ -9,7 +9,7 @@
                 <form string="Send Advice To Bank">               
                     	<group>
                     		<field name="bank_id" on_change="onchange_bank_id(bank_id)"/>
-                    		<field name="url" />
+                    		<field name="url" required="True"/>
                     		<field name="csv_path" />
                     	</group>
                     	<footer>

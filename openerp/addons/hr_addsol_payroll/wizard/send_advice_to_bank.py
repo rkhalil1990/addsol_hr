@@ -28,7 +28,7 @@ class addsol_send_advice_to_bank(osv.TransientModel):
     _description = "Send payslip advice to bank"
     
     _columns = {
-        'bank_id': fields.many2one('res.bank','Bank'),
+        'bank_id': fields.many2one('res.bank','Bank',required=True),
         'url': fields.char('URL'),
         'csv_path': fields.binary('CSV File', required=True),
     }
@@ -54,3 +54,8 @@ class addsol_send_advice_to_bank(osv.TransientModel):
         bank = bank_obj.browse(cr, uid, bank_id, context=context)
         res.update({'url': bank.url})
         return {'value': res}
+    
+    
+    def send_advice(self, cr, uid, ids, *args):
+        
+        return True
