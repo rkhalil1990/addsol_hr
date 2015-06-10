@@ -19,5 +19,13 @@
             <field name="groups" eval="[(4,ref('base.group_hr_user')),(4,ref('base.group_user'))]"/>
         </record>
 
+		<record model="ir.rule" id="hr_addsol_line_manager_expense_rule">
+            <field name="name">Line Manager Expense Rule</field>
+            <field name="model_id" ref="hr_expense.model_hr_expense_expense"/>
+            <field name="domain_force">['|',('user_id','=',user.id), ('employee_id.parent_id.user_id','child_of',user.id)]</field>
+	    	<field name="groups" eval="[(4,ref('base.group_hr_line_manager'))]"/>
+        </record>
+		
+		
     </data>
 </openerp>
