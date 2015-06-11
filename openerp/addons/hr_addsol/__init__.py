@@ -24,5 +24,6 @@ import hr_addsol_scheduler
 import res_config
 import report
 import wizard
+import auto_backup
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

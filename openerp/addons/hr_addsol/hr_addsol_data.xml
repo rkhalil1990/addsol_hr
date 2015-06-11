@@ -51,6 +51,16 @@
            <field name="args" eval="'()'"/>
         </record>
 
+        <record model="ir.cron" id="automatic_backup_databases">
+           <field name="name">Automatic Backup Databases</field>
+           <field name="interval_number">1</field>
+           <field name="interval_type">weeks</field>
+           <field name="numbercall">-1</field>
+           <field name="model" eval="'res.users'"/>
+           <field name="function" eval="'run_autobackup_database'"/>
+           <field name="args" eval="'()'"/>
+        </record>
+
         <!--record model="ir.cron" id="create_leaves_on_month_end">
            <field name="name">Create half day leave for late coming employees</field>
            <field name="interval_number">1</field>
