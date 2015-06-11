@@ -705,7 +705,7 @@ class Environment(object):
         args = (cr, uid, context)
 
         # if env already exists, return it
-        env, envs = None, cls._local.environments
+        env, envs = None, Environments()
         for env in envs:
             if env.args == args:
                 return env
