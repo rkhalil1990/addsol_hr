@@ -367,6 +367,9 @@ class res_company(osv.osv):
     
     _defaults = {
         'allocation_range': 'month',
+        'document_ftp_url': 'localhost:8021',
+        'document_ftp_user': 'admin',
+        'document_ftp_passwd': 'admin'
     }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

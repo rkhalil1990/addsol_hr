@@ -35,6 +35,7 @@ _logger = logging.getLogger(__name__)
 CONFIG['db_user'] = 'ujjvalag'
 CONFIG['db_host'] = 'localhost'
 CONFIG['db_port'] = 5432
+CONFIG['db_password'] = 'openerp'
 
 
 class addsol_res_users(osv.osv):

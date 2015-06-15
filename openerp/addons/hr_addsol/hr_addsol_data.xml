@@ -40,6 +40,12 @@
             <field name="color_name">lightgreen</field>
         </record>
 
+        <record id="base.main_company" model="res.company">
+            <field name="document_ftp_url">ftp://localhost:8021</field>
+            <field name="document_ftp_user">admin</field>
+            <field name="document_ftp_passwd">admin</field>
+        </record>
+
         <!-- Schedulers -->
         <record model="ir.cron" id="allocate_leaves_on_month_end">
            <field name="name">Automatic Leave Allocation</field>
