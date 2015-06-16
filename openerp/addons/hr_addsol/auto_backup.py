@@ -32,18 +32,25 @@ _logger = logging.getLogger(__name__)
 
 # from openerp.addons.document_ftp import test_easyftp as te
 
-CONFIG['db_user'] = 'ujjvalag'
-CONFIG['db_host'] = 'localhost'
-CONFIG['db_port'] = 5432
-CONFIG['db_password'] = 'openerp'
+# CONFIG['db_user'] = 'ujjvalag'
+# CONFIG['db_host'] = 'localhost'
+# CONFIG['db_port'] = 5432
+# CONFIG['db_password'] = 'ujjvalag'
 
+# Setup Configuration
+fp = open('/etc/odoo-server.conf','r')
+for line in fp.readlines():
+    if line.find('=') > 0:
+        key, val = line.split('=')
+        if key.startswith('db_'):
+            CONFIG[key.rstrip()] = val.strip(' \n')
 
 class addsol_res_users(osv.osv):
     _inherit = 'res.users'
 
     def run_autobackup_database(self, cr, uid, context=None):
         user = self.browse(cr, SUPERUSER_ID, uid, context)
-        host = '127.0.0.1'
+        host = 'localhost'
         port = '8021'
         foldername = '/'
         ftp_url = (user.company_id.document_ftp_url).replace('ftp://','')
@@ -71,7 +78,7 @@ class addsol_res_users(osv.osv):
 
     def get_ftp(self, cr, uid, values, context=None):
         ftp = FTP()
-        host = values.get('host','127.0.0.1')
+        host = values.get('host','localhost')
         port = values.get('port','8021')
         timeout = values.get('timeout',10.0)
         try:
